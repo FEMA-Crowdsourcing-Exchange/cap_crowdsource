@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CAP Image Damage Assessment</title>
+    <link rel="stylesheet" href="image_review.css" type="text/css">
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.3.1/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.3.1/build/ol.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="image_review.js"></script>
+</head>
+<body onload="init_map()">
+	<div class="left-layout-frame">
+    <div id="map" class="map"> </div>
+    <div id="navigation" class="navigation">
+    
+    <button class="nav nav1" onclick='previous_image();'>Previous Image</button> 
+    <button class="nav" onclick='next_image();'>Skip - Next Image</button> 
+    <button class="nav" onclick='save_next_image();'>Save - Next Image</button>
+   </div>
+   </div>
+	<div class="right-layout-frame">
+     <div id="review_tools" class="review_tools">
+     <h3>Mark the Image with Damage Assessments</h3>
+    	<input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'/>Mark Buildings as Affected<br/>
+    	<input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'/>Mark Buildings as Impacted<br/>
+    	<input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'/>Mark Buildings as Damaged<br/>
+    	<input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'/>Mark Buildings as Destroyed<br/><br/>
+    	<input type="radio" name="btn_DamageMarker" value="eraser" size="5" onclick='set_markertool("eraser");'/>Remove Marks<br/><br/>
+
+    	<input type="radio" name="btn_GeneralMarker" value="impct" size="5" onselect='set_general("impact");' />In General, Impact is shown in Image<br/>     
+    	<input type="radio" name="btn_GeneralMarker" value="non-impct" size="5" onselect='set_general("noimpact");'/>In General, No Impact in Images<br/>   
+
+      </div>
+     <div id="image_info" class="image_info">
+     <b>Image Info:</b><br/>
+     Event: <span id='eventname'>&lt;Event Name&gt;</span> Team: <span id='eventname'>&lt;Team&gt;</span> Mission: <span id='eventname'>&lt;Mission&gt;</span> <br/>
+     Photo Date: <span id='eventname'>&lt;date&gt;</span>   <br/>
+     Altitude: <span id='eventname'>&lt;altitude&gt;</span>  <br/>
+	  </div>
+     <div id="overview_map" class="overview_map"> </div>
+	</div>
+</body>
+</html>

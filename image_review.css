@@ -1,0 +1,65 @@
+div {
+	border-width: thick;
+	border-color: red;
+}
+
+ div.map {
+	width: 800px;
+	height: 500px;
+	display: block;
+ }  
+
+ div.overview_map {
+	width: 300px;
+	height: 300px;
+	display: block;
+	margin-top: 20px;
+ } 
+
+ div.navigation {
+	width: 500px;
+	height: 30px;
+	display: block;
+	margin-top: 20px;
+	text-align: center;
+ }  
+ 
+ div.review_tools {
+	width: 300px;
+	#display: block;
+	font-size: 80%;
+ } 
+ 
+div.image_info {
+	width: 300px;
+	#display: block;
+	font-size: 80%;
+	margin-top: 8px;
+	padding: 5px;
+	border-radius: 5pt;
+	border-style: solid;
+	border-width: medium;
+	border-color: grey;
+ } 
+
+div.right-layout-frame {
+	#display: block;
+	float: right;
+	#width: 180px;
+	margin-right: 20px;
+}
+
+div.left-layout-frame {
+	#display: block;
+	float: left;
+	width: auto;
+	text-align: center;
+}
+
+button.nav {
+    margin-left: 15px;
+    padding: 5px;
+}
+button.nav1 {
+  margin-right: 10px;
+}
