@@ -60,6 +60,51 @@ button.nav {
     margin-left: 15px;
     padding: 5px;
 }
+
 button.nav1 {
   margin-right: 10px;
+}
+
+b.piLbl {
+   font-size: 80%;
+}
+
+#overlayMarker {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #088;
+  border-radius: 10px;
+  background-color: #0FF;
+  opacity: 0.5;
+  visibility: visible;
+}
+
+.tool_spn {
+	text-align: left;
+	vertical-align: middle;
+   display: table-cell;
+    
+	padding-bottom: 2px;
+	padding-top: 2px;
+	padding-right: 6px;
+}
+
+.affected_spn {
+   background-color: #ffffb2;
+}
+
+.impacted_spn {
+   background-color: #feee5c;   
+}
+
+.damaged_spn {
+   background-color: #fd8d3c;
+}
+
+.destroyed_spn {
+   background-color: #f03b20;
+}
+
+.destroyedx_spn {
+   background-color: #bd0026;
 }
