@@ -80,46 +80,90 @@ function build_styleSets() {
 }
 
 function init_review_map() {
-	// Map views always need a projection.  Here we just want to map image
-	// coordinates directly to map coordinates, so we create a projection that uses
-	// the image extent in pixels.
-	var extent = [0, 0, 1024, 968];
-	var projection = new ol.proj.Projection({
-		code: "xkcd-image",
-		units: "pixels",
-		extent: extent
-	});
+	if (USE_LEAFLET == true) {
+		// Using leaflet.js to pan and zoom a big image.
 
-	assessment_features = new ol.source.Vector({
-		wrapX: false
-	});
+		// create the slippy map
+		var map = L.map('map', {
+			minZoom: 0,
+			maxZoom: 10,
+			center: [0, 0],
+			zoom: 0,
+			crs: L.CRS.Simple
+		});
 
-	var vector = new ol.layer.Vector({
-		source: assessment_features
-	});
+		// dimensions of the image
+		var w = 1024,
+			h = 968,
+			url = 'https://imgs.xkcd.com/comics/online_communities.png';
 
-	imageLyr = new ol.layer.Image({
-		source: new ol.source.ImageStatic({
-			attributions: '© <a href="http://xkcd.com/license.html">xkcd</a>',
-			url: "https://imgs.xkcd.com/comics/online_communities.png",
-			projection: projection,
-			imageExtent: extent
-		}),
-		zIndex: -1
-	});
+		// calculate the edges of the image, in coordinate space
+		var southWest = map.unproject([0, h], 1);
+		var northEast = map.unproject([w, 0], 1);
+		var bounds = new L.LatLngBounds(southWest, northEast);
 
-	map = new ol.Map({
-		layers: [imageLyr, vector],
-		target: "map",
-		view: new ol.View({
-			projection: projection,
-			center: ol.extent.getCenter(extent),
-			zoom: 2,
-			maxZoom: 8
-		})
-	});
+		// add the image overlay, 
+		// so that it covers the entire map
+		L.imageOverlay(url, bounds).addTo(map);
 
-	build_styleSets();
+		// tell leaflet that the map is exactly as big as the image
+		map.setMaxBounds(bounds);
+
+
+		// var map = L.map('map', {
+		// 	maxZoom: 20,
+		// 	minZoom: 1,
+		// 	crs: L.CRS.Simple
+		// }).setView([0, 0], 20);
+
+		// L.tileLayer('https://imgs.xkcd.com/comics/online_communities.png', {
+		// 	attribution: '© <a href="http://xkcd.com/license.html">xkcd</a>',
+		// }).addTo(map);
+		// var southWest = map.unproject([0, extent[1]], map.getMaxZoom());
+		// var northEast = map.unproject([extent[0], 0], map.getMaxZoom());
+		// map.setMaxBounds(new L.LatLngBounds(southWest, northEast));
+	} else {
+		// Map views always need a projection.  Here we just want to map image
+		// coordinates directly to map coordinates, so we create a projection that uses
+		// the image extent in pixels.
+		var extent = [0, 0, 1024, 968];
+		var projection = new ol.proj.Projection({
+			code: "xkcd-image",
+			units: "pixels",
+			extent: extent
+		});
+
+		assessment_features = new ol.source.Vector({
+			wrapX: false
+		});
+
+		var vector = new ol.layer.Vector({
+			source: assessment_features
+		});
+
+		imageLyr = new ol.layer.Image({
+			source: new ol.source.ImageStatic({
+				attributions: '© <a href="http://xkcd.com/license.html">xkcd</a>',
+				url: "https://imgs.xkcd.com/comics/online_communities.png",
+				projection: projection,
+				imageExtent: extent
+			}),
+			zIndex: -1
+		});
+
+		map = new ol.Map({
+			layers: [imageLyr, vector],
+			target: "map",
+			view: new ol.View({
+				projection: projection,
+				center: ol.extent.getCenter(extent),
+				zoom: 2,
+				maxZoom: 8
+			})
+		});
+
+		build_styleSets();
+	}
 }
 
 function init_overview_map() {
@@ -186,8 +230,8 @@ function init_map() {
 
 function checkProtocol() {
 	$("div#redirectModalText").html("<h3>" + window.location.href + " does not support 'https://'</h3>" +
-	"<p>redirecting to: <a href='http:" + window.location.href.substring(window.location.protocol.length) + "'>http:" + window.location.href.substring(window.location.protocol.length) + "</a></p>" +
-	"<p>Please bookmark and use the link above for future visits.</p>"	
+		"<p>redirecting to: <a href='http:" + window.location.href.substring(window.location.protocol.length) + "'>http:" + window.location.href.substring(window.location.protocol.length) + "</a></p>" +
+		"<p>Please bookmark and use the link above for future visits.</p>"
 	);
 	if (window.location.protocol === "https:") {
 		setTimeout(function () {
