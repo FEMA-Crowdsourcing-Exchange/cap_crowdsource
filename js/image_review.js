@@ -108,20 +108,6 @@ function init_review_map() {
 
 		// tell leaflet that the map is exactly as big as the image
 		map.setMaxBounds(bounds);
-
-
-		// var map = L.map('map', {
-		// 	maxZoom: 20,
-		// 	minZoom: 1,
-		// 	crs: L.CRS.Simple
-		// }).setView([0, 0], 20);
-
-		// L.tileLayer('https://imgs.xkcd.com/comics/online_communities.png', {
-		// 	attribution: '© <a href="http://xkcd.com/license.html">xkcd</a>',
-		// }).addTo(map);
-		// var southWest = map.unproject([0, extent[1]], map.getMaxZoom());
-		// var northEast = map.unproject([extent[0], 0], map.getMaxZoom());
-		// map.setMaxBounds(new L.LatLngBounds(southWest, northEast));
 	} else {
 		// Map views always need a projection.  Here we just want to map image
 		// coordinates directly to map coordinates, so we create a projection that uses
