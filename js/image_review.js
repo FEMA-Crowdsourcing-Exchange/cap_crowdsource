@@ -4,8 +4,10 @@
 var USE_LEAFLET = true;
 var REPLACE_SRC = false;
 var OVR_ZOOM = 14;
-var IMG_ZOOM = 3;
-var IMG_DEFAULT_SIZE = [0, 0, 1200, 800];
+// var IMG_ZOOM = 3;
+var IMG_ZOOM = 2;
+// var IMG_DEFAULT_SIZE = [0, 0, 1200, 800];
+var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
 var IMG_CENTER = [600, 400];
 var eventId;
 var image_history = [];
@@ -26,6 +28,34 @@ var damageMarkers = { // Marker = Severity: 'hex color'
 	"destroyed": '#FF0000'
 };
 var setDrawingOptions; // exposing function globally
+
+
+$.ajaxPrefilter(function (options) {
+	console.log("ajaxPrefilter - options", options);
+	var url = options.url;
+	if (options.crossDomain) {
+		var newData = {};
+		// Copy the options.data object to the newData.data property.
+		// We need to do this because javascript doesn't deep-copy variables by default.
+		newData.data = $.extend({}, options.data);
+		newData.url = options.url;
+
+		// Reset the options object - we'll re-populate in the following lines.
+		options = {};
+
+		// Set the proxy URL
+		options.beforeSend = function (xhr) { 
+            xhr.setRequestHeader('Host', 'localhost:8888');
+            xhr.setRequestHeader('Origin', 'localhost:8888');
+        }
+
+		options.url = "http://127.0.0.1:8888/";
+		options.data = $.param(newData);
+		// options.url = "http://127.0.0.1:8888" + encodeURIComponent( url );		
+		// options.crossDomain = false;
+	}
+	console.log("ajaxPrefilter(end) - options", options);	
+});
 
 function build_styleSets() {
 	var width = 3;
@@ -145,24 +175,22 @@ function buildLeafletDrawToolbar(map) {
 
 function init_review_map() {
 	// dimensions of the image
-	var w = 1024,
-		h = 968,
-		url = 'https://imgs.xkcd.com/comics/online_communities.png';
+	var url = 'https://imgs.xkcd.com/comics/online_communities.png';
 
 	if (USE_LEAFLET == true) {
 		// Using leaflet.js to pan and zoom an image.
 		// create the map
-		var map = L.map('map', {
+		map = L.map('map', {
 			minZoom: 0,
-			maxZoom: 10,
+			maxZoom: OVR_ZOOM,
 			center: [0, 0],
-			zoom: 0,
+			zoom: IMG_ZOOM,
 			crs: L.CRS.Simple // Coordinates in CRS.Simple take the form of [y, x] instead of [x, y], in the same way Leaflet uses [lat, lng] instead of [lng, lat].
 		});
 
 		// calculate the edges of the image, in coordinate space
-		var southWest = map.unproject([0, h], 1);
-		var northEast = map.unproject([w, 0], 1);
+		var southWest = map.unproject([0, IMG_DEFAULT_SIZE[3]], IMG_ZOOM - 1);
+		var northEast = map.unproject([IMG_DEFAULT_SIZE[2], 0], IMG_ZOOM - 1);
 		var bounds = new L.LatLngBounds(southWest, northEast);
 
 		// add the image overlay, 
@@ -177,7 +205,7 @@ function init_review_map() {
 		// Map views always need a projection.  Here we just want to map image
 		// coordinates directly to map coordinates, so we create a projection that uses
 		// the image extent in pixels.
-		var extent = [0, 0, w, h];
+		var extent = IMG_DEFAULT_SIZE;
 		var projection = new ol.proj.Projection({
 			code: "xkcd-image",
 			units: "pixels",
@@ -276,7 +304,7 @@ function init_map() {
 	init_review_map();
 	init_overview_map();
 	eventId = "9073";
-	// next_image();
+	next_image();
 }
 
 function checkProtocol() {
@@ -297,111 +325,121 @@ function checkProtocol() {
 // 	myMap.removeLayer(imageLyr);
 // }
 
-// function set_overview_image(image) {
-// 	if (USE_LEAFLET == true) {
-// 		overview_map.setView(
-// 			[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
-// 			OVR_ZOOM
-// 		);
-// 	} else {
-// 		var vw = overview_map.getView();
-// 		var newPt = ol.proj.transform(
-// 			[parseFloat(image["Longitude"]), parseFloat(image["Latitude"])],
-// 			"EPSG:4326",
-// 			"EPSG:3857"
-// 		);
-// 		vw.setCenter(newPt);
-// 		if (vw.getZoom() < 12) {
-// 			vw.setZoom(OVR_ZOOM);
-// 		}
+function set_overview_image(image) {
+	if (USE_LEAFLET == true) {
+		overview_map.setView(
+			[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
+			OVR_ZOOM
+		);
+	} else {
+		var vw = overview_map.getView();
+		var newPt = ol.proj.transform(
+			[parseFloat(image["Longitude"]), parseFloat(image["Latitude"])],
+			"EPSG:4326",
+			"EPSG:3857"
+		);
+		vw.setCenter(newPt);
+		if (vw.getZoom() < 12) {
+			vw.setZoom(OVR_ZOOM);
+		}
 
-// 		var feature = new ol.Feature({
-// 			geometry: new ol.geom.Point(newPt),
-// 			name: "Current Photo",
-// 			class: "marker"
-// 		});
+		var feature = new ol.Feature({
+			geometry: new ol.geom.Point(newPt),
+			name: "Current Photo",
+			class: "marker"
+		});
 
-// 		overview_features.clear();
-// 		overview_features.addFeature(feature);
-// 	}
-// }
+		overview_features.clear();
+		overview_features.addFeature(feature);
+	}
+}
 
-// function set_review_image(image) {
-// 	var extent = IMG_DEFAULT_SIZE;
-// 	var projection = new ol.proj.Projection({
-// 		code: "CAP-image",
-// 		units: "pixels",
-// 		extent: extent
-// 	});
+function set_review_image(image) {
+	var extent = IMG_DEFAULT_SIZE;
+	if (USE_LEAFLET == true) {
+		assessment_features.clearLayers();
+		map.removeLayer(imageLyr);
+		L.imageOverlay(image["ImageURL"], bounds).addTo(map);
 
-// 	assessment_features.clear();
+		var vw = map.getView();
+		vw.setZoom(IMG_ZOOM);
+		vw.setCenter([0, 0]);
+	} else {
+		var projection = new ol.proj.Projection({
+			code: "CAP-image",
+			units: "pixels",
+			extent: extent
+		});
+		assessment_features.clear();
 
-// 	var imgSrc = new ol.source.ImageStatic({
-// 		attributions: '© <a href="https://disasters.geoplatform.gov" target="new">FEMA</a>',
-// 		url: image["ImageURL"],
-// 		projection: projection,
-// 		imageExtent: extent
-// 	});
+		var imgSrc = new ol.source.ImageStatic({
+			attributions: '© <a href="https://disasters.geoplatform.gov" target="new">FEMA</a>',
+			url: image["ImageURL"],
+			projection: projection,
+			imageExtent: extent
+		});
 
-// 	if (REPLACE_SRC == true) {
-// 		imageLyr.setSource(imgSrc);
-// 	} else {
-// 		map.removeLayer(imageLyr);
-// 		imageLyr = new ol.layer.Image({
-// 			source: imgSrc,
-// 			zIndex: -1
-// 		});
-// 		map.addLayer(imageLyr);
-// 	}
-// 	var vw = map.getView();
-// 	vw.setZoom(IMG_ZOOM);
-// 	vw.setCenter(IMG_CENTER);
+		if (REPLACE_SRC == true) {
+			imageLyr.setSource(imgSrc);
+		} else {
+			map.removeLayer(imageLyr);
+			imageLyr = new ol.layer.Image({
+				source: imgSrc,
+				zIndex: -1
+			});
+			map.addLayer(imageLyr);
+		}
+		var vw = map.getView();
+		vw.setZoom(IMG_ZOOM);
+		vw.setCenter(IMG_CENTER);
+	}
+	set_overview_image(image);
+}
 
-// 	set_overview_image(image);
-// }
+function next_image() {
+	if (1 == 2) {
+		apply_image_info(sample_image_json);
+	} else {
+		$.ajax({
+			url: "http://127.0.0.1:8888/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
+			// url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
+			processData: false, 
+			crossDomain: true
+		}).success(apply_image_info);
+	}
+}
 
-// function next_image() {
-// 	if (1 == 2) {
-// 		apply_image_info(sample_image_json);
-// 	} else {
-// 		$.ajax({
-// 			url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
-// 			processData: false
-// 		}).success(apply_image_info);
-// 	}
-// }
+function set_info(slctr, newText) {
+	$(slctr).text(newText);
+}
 
-// function set_info(slctr, newText) {
-// 	$(slctr).text(newText);
-// }
+function convert_mssql_date(data) {
+	var dt_str;
+	if (!data) {
+		dt_str = "";
+	} else {
+		dt_str = data.slice(6, 19);
+	}
+	var date = new Date(parseInt(dt_str));
+	return date.toISOString().slice(0, 19);
+}
 
-// function convert_mssql_date(data) {
-// 	var dt_str;
-// 	if (!data) {
-// 		dt_str = "";
-// 	} else {
-// 		dt_str = data.slice(6, 19);
-// 	}
-// 	var date = new Date(parseInt(dt_str));
-// 	return date.toISOString().slice(0, 19);
-// }
+function apply_image_info(data) {
+	var jsonData;
+	if (typeof data == "string") {
+		jsonData = JSON.parse(data);
+	} else {
+		jsonData = data;
+	}
 
-// function apply_image_info(data) {
-// 	var jsonData;
-// 	if (typeof data == "string") {
-// 		jsonData = JSON.parse(data);
-// 	} else {
-// 		jsonData = data;
-// 	}
+	set_info("#eventname", jsonData["EventName"]);
+	set_info("#missionname", jsonData["MissionName"]);
+	set_info("#teamname", jsonData["TeamName"]);
+	set_info("#photo_date", convert_mssql_date(jsonData["EXIFPhotoDate"]));
+	set_info("#photo_altitude", jsonData["Altitude"]);
 
-// 	set_info("#eventname", jsonData["EventName"]);
-// 	set_info("#missionname", jsonData["MissionName"]);
-// 	set_info("#teamname", jsonData["TeamName"]);
-// 	set_info("#photo_date", convert_mssql_date(jsonData["EXIFPhotoDate"]));
-// 	set_info("#photo_altitude", jsonData["Altitude"]);
-
-// 	set_review_image(jsonData);
-// }
+	set_review_image(jsonData);
+}
 
 // function previous_image() {
 // 	return;
@@ -469,21 +507,3 @@ function set_markertool(severity) {
 function set_general(severity) {
 	return;
 }
-
-$.ajaxPrefilter(function (options) {
-	if (options.crossDomain) {
-		var newData = {};
-		// Copy the options.data object to the newData.data property.
-		// We need to do this because javascript doesn't deep-copy variables by default.
-		newData.data = $.extend({}, options.data);
-		newData.url = options.url;
-
-		// Reset the options object - we'll re-populate in the following lines.
-		options = {};
-
-		// Set the proxy URL
-		options.url = "http://127.0.0.1:8888/";
-		options.data = $.param(newData);
-		options.crossDomain = false;
-	}
-});
