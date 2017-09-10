@@ -19,6 +19,13 @@ var assessment_features;
 var imageLyr;
 var draw_tool;
 var styleSets;
+var damageMarkers = { // Marker = Severity: 'hex color'
+	"affected": '#0000ff',
+	"impacted": '#0000ff',
+	"damaged": '#FF0000',
+	"destroyed": '#FF0000'
+};
+var setDrawingOptions; // exposing function globally
 
 function build_styleSets() {
 	var width = 3;
@@ -101,27 +108,24 @@ function buildLeafletDrawToolbar(map) {
 	});
 	var control = map.addControl(drawControl);
 
-	// map.on(L.Draw.Event.CREATED, function (e) {
-	// 	var type = e.layerType,
-	// 		layer = e.layer;
+	map.on(L.Draw.Event.CREATED, function (e) {
+		var type = e.layerType,
+			layer = e.layer;
 
-	// 	if (type === 'marker') {
-	// 		layer.bindPopup('A popup!');
-	// 	}
+		assessment_features.addLayer(layer);
+	});
 
-	// 	assessment_features.addLayer(layer);
-	// });
+	map.on(L.Draw.Event.EDITED, function (e) {
+		var layers = e.layers;
+		var countOfEditedLayers = 0;
+		layers.eachLayer(function (layer) {
+			countOfEditedLayers++;
+		});
+		console.log("Edited " + countOfEditedLayers + " layers");
+	});
 
-	// map.on(L.Draw.Event.EDITED, function (e) {
-	// 	var layers = e.layers;
-	// 	var countOfEditedLayers = 0;
-	// 	layers.eachLayer(function (layer) {
-	// 		countOfEditedLayers++;
-	// 	});
-	// 	console.log("Edited " + countOfEditedLayers + " layers");
-	// });
-
-	function setDrawingOptions(color) {
+	// function setDrawingOptions(color) {
+	setDrawingOptions = function (color) {
 		drawControl.setDrawingOptions({
 			circlemarker: {
 				color: color
@@ -129,15 +133,20 @@ function buildLeafletDrawToolbar(map) {
 		});
 
 	}
-	// Marker = ['button id', 'hex color']
-	var damageMarkers = [['btn_DamageMarkerAffected', '#0000ff'],['btn_DamageMarkerImpacted', '#0000ff'],['btn_DamageMarkerDamaged', '#FF0000'],['btn_DamageMarkerDestroyed', '#FF0000']];
-	
-	damageMarkers.forEach(function(marker) {
-		L.DomUtil.get(marker[0]).onclick = function () {
-			setDrawingOptions(marker[1]);
-			$('a[title="Draw a circlemarker"] span').click();
-		};			
-	}, this);
+	// // Marker = ['button id', 'hex color']
+	// var damageMarkers = [
+	// 	['btn_DamageMarkerAffected', '#0000ff'],
+	// 	['btn_DamageMarkerImpacted', '#0000ff'],
+	// 	['btn_DamageMarkerDamaged', '#FF0000'],
+	// 	['btn_DamageMarkerDestroyed', '#FF0000']
+	// ];
+
+	// damageMarkers.forEach(function (marker) {
+	// 	L.DomUtil.get(marker[0]).onclick = function () {
+	// 		setDrawingOptions(marker[1]);
+	// 		$('a[title="Draw a circlemarker"] span').click();
+	// 	};
+	// }, this);
 
 }
 
@@ -459,12 +468,19 @@ function checkProtocol() {
 function set_markertool(severity) {
 	if (severity != "eraser") {
 		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
-		removeMarkerTool();
-		addMarkerTool(severity);
+		if (USE_LEAFLET) {
+			setDrawingOptions(damageMarkers[severity]);
+			$('a[title="Draw a circlemarker"] span').click();
+		} else {
+			removeMarkerTool();
+			addMarkerTool(severity);
+		}
 	} else {
-		console.log("assessment_features", assessment_features);
-		assessment_features.clearLayers();
-		// assessment_features.clear();
+		if (USE_LEAFLET) {
+			assessment_features.clearLayers();
+		} else {
+			assessment_features.clear();
+		}
 	}
 }
 
