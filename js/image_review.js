@@ -109,15 +109,15 @@ function buildLeafletDrawToolbar(map) {
 	var control = map.addControl(drawControl);
 
 	map.on(L.Draw.Event.DRAWSTART, function (e) {
-		if ($("input[name=btn_DamageMarker][value=eraser]:checked").length === 1  || $("input[name=btn_DamageMarker]:checked").length === 0 ) {
+		if ($("input[name=btn_DamageMarker][value=eraser]:checked").length === 1 || $("input[name=btn_DamageMarker]:checked").length === 0) {
 			$("input[name=btn_DamageMarker][value=BLDG_A]").prop("checked", "checked");
-			setDrawingOptions(damageMarkers['affected']);			
+			setDrawingOptions(damageMarkers['affected']);
 		}
 	});
 
 	map.on(L.Draw.Event.CREATED, function (e) {
-		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");			
-		
+		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
+
 		var type = e.layerType,
 			layer = e.layer;
 
@@ -133,7 +133,6 @@ function buildLeafletDrawToolbar(map) {
 		console.log("Edited " + countOfEditedLayers + " layers");
 	});
 
-	// function setDrawingOptions(color) {
 	setDrawingOptions = function (color) {
 		drawControl.setDrawingOptions({
 			circlemarker: {
@@ -142,21 +141,6 @@ function buildLeafletDrawToolbar(map) {
 		});
 
 	}
-	// // Marker = ['button id', 'hex color']
-	// var damageMarkers = [
-	// 	['btn_DamageMarkerAffected', '#0000ff'],
-	// 	['btn_DamageMarkerImpacted', '#0000ff'],
-	// 	['btn_DamageMarkerDamaged', '#FF0000'],
-	// 	['btn_DamageMarkerDestroyed', '#FF0000']
-	// ];
-
-	// damageMarkers.forEach(function (marker) {
-	// 	L.DomUtil.get(marker[0]).onclick = function () {
-	// 		setDrawingOptions(marker[1]);
-	// 		$('a[title="Draw a circlemarker"] span').click();
-	// 	};
-	// }, this);
-
 }
 
 function init_review_map() {
@@ -175,19 +159,6 @@ function init_review_map() {
 			zoom: 0,
 			crs: L.CRS.Simple // Coordinates in CRS.Simple take the form of [y, x] instead of [x, y], in the same way Leaflet uses [lat, lng] instead of [lng, lat].
 		});
-
-		// var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-		// 	osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-		// 	osm = L.tileLayer(osmUrl, {
-		// 		maxZoom: 18,
-		// 		attribution: osmAttrib
-		// 	}),
-		// 	map = new L.Map('map', {
-		// 		layers: [osm],
-		// 		center: new L.LatLng(-37.7772, 175.2756),
-		// 		zoom: 15
-		// 	});
-
 
 		// calculate the edges of the image, in coordinate space
 		var southWest = map.unproject([0, h], 1);
@@ -449,30 +420,30 @@ function checkProtocol() {
 // 	next_image();
 // }
 
-// function addMarkerTool(cls) {
-// 	var myCls = cls;
-// 	draw_tool = new ol.interaction.Draw({
-// 		source: assessment_features,
-// 		type: "Point",
-// 		style: styleSets[myCls]
-// 	});
-// 	draw_tool.on("drawend", function (e) {
-// 		var style = styleSets[myCls];
-// 		e.feature.setStyle(style);
-// 		e.feature.setProperties({
-// 				dmgClass: myCls
-// 			},
-// 			true
-// 		);
-// 	});
+function addMarkerTool(cls) {
+	var myCls = cls;
+	draw_tool = new ol.interaction.Draw({
+		source: assessment_features,
+		type: "Point",
+		style: styleSets[myCls]
+	});
+	draw_tool.on("drawend", function (e) {
+		var style = styleSets[myCls];
+		e.feature.setStyle(style);
+		e.feature.setProperties({
+				dmgClass: myCls
+			},
+			true
+		);
+	});
 
-// 	map.addInteraction(draw_tool);
-// }
+	map.addInteraction(draw_tool);
+}
 
-// function removeMarkerTool() {
-// 	var result = map.removeInteraction(draw_tool);
-// 	console.log("remove tool: ", result);
-// }
+function removeMarkerTool() {
+	var result = map.removeInteraction(draw_tool);
+	console.log("remove tool: ", result);
+}
 
 function set_markertool(severity) {
 	if (severity != "eraser") {
@@ -485,7 +456,7 @@ function set_markertool(severity) {
 			addMarkerTool(severity);
 		}
 	} else {
-		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "");		
+		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "");
 		if (USE_LEAFLET) {
 			assessment_features.clearLayers();
 			// $('a[title="Cancel drawing"]').click();	// Doesn't work		
@@ -495,9 +466,9 @@ function set_markertool(severity) {
 	}
 }
 
-// function set_general(severity) {
-// 	return;
-// }
+function set_general(severity) {
+	return;
+}
 
 $.ajaxPrefilter(function (options) {
 	if (options.crossDomain) {
