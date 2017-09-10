@@ -1,5 +1,10 @@
-body {
+html, body {
 	min-width: 463px;
+	height: 100%;
+}
+
+div.container-fluid {
+	height: 100%;
 }
 
 div {
@@ -7,14 +12,18 @@ div {
 	border-color: red;
 }
 
+div.panel {
+	height: 100%;
+}
+
 div#map.map {
 	/* position: absolute;
 	float: left; */
 	top: 1%;
-	/* height: 98%; */
+	height: 90%;
 	width: 100%;
 	z-index: 1;
-	height: 600px;
+	/* height: 600px; */
 	margin-top: 20px;	
 	display: block;
 }
