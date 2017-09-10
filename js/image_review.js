@@ -81,11 +81,10 @@ function build_styleSets() {
 
 function buildLeafletDrawToolbar(map) {
 	assessment_features = new L.FeatureGroup();
-	console.log("assessment_features", assessment_features);
 	map.addLayer(assessment_features);
 
 	var drawControl = new L.Control.Draw({
-		position: 'topleft',		
+		position: 'topleft',
 		edit: {
 			featureGroup: assessment_features
 		},
@@ -93,15 +92,53 @@ function buildLeafletDrawToolbar(map) {
 			polygon: false,
 			polyline: false,
 			rectangle: false,
-			circle: {
+			circle: false,
+			circlemarker: {
 				repeatMode: true
 			},
 			marker: false
 		}
 	});
+	var control = map.addControl(drawControl);
 
-	console.log("map", map);
-	map.addControl(drawControl);
+	// map.on(L.Draw.Event.CREATED, function (e) {
+	// 	var type = e.layerType,
+	// 		layer = e.layer;
+
+	// 	if (type === 'marker') {
+	// 		layer.bindPopup('A popup!');
+	// 	}
+
+	// 	assessment_features.addLayer(layer);
+	// });
+
+	// map.on(L.Draw.Event.EDITED, function (e) {
+	// 	var layers = e.layers;
+	// 	var countOfEditedLayers = 0;
+	// 	layers.eachLayer(function (layer) {
+	// 		countOfEditedLayers++;
+	// 	});
+	// 	console.log("Edited " + countOfEditedLayers + " layers");
+	// });
+
+	function setDrawingOptions(color) {
+		drawControl.setDrawingOptions({
+			circlemarker: {
+				color: color
+			}
+		});
+
+	}
+	// Marker = ['button id', 'hex color']
+	var damageMarkers = [['btn_DamageMarkerAffected', '#0000ff'],['btn_DamageMarkerImpacted', '#0000ff'],['btn_DamageMarkerDamaged', '#FF0000'],['btn_DamageMarkerDestroyed', '#FF0000']];
+	
+	damageMarkers.forEach(function(marker) {
+		L.DomUtil.get(marker[0]).onclick = function () {
+			setDrawingOptions(marker[1]);
+			$('a[title="Draw a circlemarker"] span').click();
+		};			
+	}, this);
+
 }
 
 function init_review_map() {
@@ -113,18 +150,25 @@ function init_review_map() {
 	if (USE_LEAFLET == true) {
 		// Using leaflet.js to pan and zoom an image.
 		// create the map
-		// var map = L.map('map', {
-		// 	minZoom: 0,
-		// 	maxZoom: 10,
-		// 	center: [0, 0],
-		// 	zoom: 0,
-		// 	crs: L.CRS.Simple // Coordinates in CRS.Simple take the form of [y, x] instead of [x, y], in the same way Leaflet uses [lat, lng] instead of [lng, lat].
-		// });
+		var map = L.map('map', {
+			minZoom: 0,
+			maxZoom: 10,
+			center: [0, 0],
+			zoom: 0,
+			crs: L.CRS.Simple // Coordinates in CRS.Simple take the form of [y, x] instead of [x, y], in the same way Leaflet uses [lat, lng] instead of [lng, lat].
+		});
 
-		var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-		osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-		osm = L.tileLayer(osmUrl, {maxZoom: 18, attribution: osmAttrib}),
-		map = new L.Map('map', {layers: [osm], center: new L.LatLng(-37.7772, 175.2756), zoom: 15});
+		// var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+		// 	osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+		// 	osm = L.tileLayer(osmUrl, {
+		// 		maxZoom: 18,
+		// 		attribution: osmAttrib
+		// 	}),
+		// 	map = new L.Map('map', {
+		// 		layers: [osm],
+		// 		center: new L.LatLng(-37.7772, 175.2756),
+		// 		zoom: 15
+		// 	});
 
 
 		// calculate the edges of the image, in coordinate space
@@ -134,7 +178,7 @@ function init_review_map() {
 
 		// add the image overlay, 
 		// so that it covers the entire map
-		// L.imageOverlay(url, bounds).addTo(map);
+		L.imageOverlay(url, bounds).addTo(map);
 
 		// tell leaflet that the map is exactly as big as the image
 		map.setMaxBounds(bounds);
@@ -412,15 +456,17 @@ function checkProtocol() {
 // 	console.log("remove tool: ", result);
 // }
 
-// function set_markertool(severity) {
-// 	if (severity != "eraser") {
-// 		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
-// 		removeMarkerTool();
-// 		addMarkerTool(severity);
-// 	} else {
-// 		assessment_features.clear();
-// 	}
-// }
+function set_markertool(severity) {
+	if (severity != "eraser") {
+		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
+		removeMarkerTool();
+		addMarkerTool(severity);
+	} else {
+		console.log("assessment_features", assessment_features);
+		assessment_features.clearLayers();
+		// assessment_features.clear();
+	}
+}
 
 // function set_general(severity) {
 // 	return;

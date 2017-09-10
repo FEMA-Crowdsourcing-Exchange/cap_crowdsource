@@ -31,6 +31,39 @@
     <script src="https://unpkg.com/leaflet-draw@0.4.12/dist/leaflet.draw.js" integrity="sha384-RvVNkwChwC2ySvAbzy4eJZmH89T0sBJrpvgYcGwL7TcW5vMx67BTOFEmugWnGV5Q"
         crossorigin="anonymous"></script>
 
+    <script src="../../src/Leaflet.Draw.Event.js"></script>
+
+    <script src="../../src/edit/handler/Edit.Poly.js"></script>
+    <script src="../../src/edit/handler/Edit.SimpleShape.js"></script>
+    <script src="../../src/edit/handler/Edit.Rectangle.js"></script>
+    <script src="../../src/edit/handler/Edit.Marker.js"></script>
+    <script src="../../src/edit/handler/Edit.CircleMarker.js"></script>
+    <script src="../../src/edit/handler/Edit.Circle.js"></script>
+
+    <script src="../../src/draw/handler/Draw.Feature.js"></script>
+    <script src="../../src/draw/handler/Draw.Polyline.js"></script>
+    <script src="../../src/draw/handler/Draw.Polygon.js"></script>
+    <script src="../../src/draw/handler/Draw.SimpleShape.js"></script>
+    <script src="../../src/draw/handler/Draw.Rectangle.js"></script>
+    <script src="../../src/draw/handler/Draw.Circle.js"></script>
+    <script src="../../src/draw/handler/Draw.Marker.js"></script>
+    <script src="../../src/draw/handler/Draw.CircleMarker.js"></script>
+
+    <script src="../../src/ext/TouchEvents.js"></script>
+    <script src="../../src/ext/LatLngUtil.js"></script>
+    <script src="../../src/ext/GeometryUtil.js"></script>
+    <script src="../../src/ext/LineUtil.Intersect.js"></script>
+    <script src="../../src/ext/Polyline.Intersect.js"></script>
+    <script src="../../src/ext/Polygon.Intersect.js"></script>
+
+    <script src="../../src/Control.Draw.js"></script>
+    <script src="../../src/Tooltip.js"></script>
+    <script src="../../src/Toolbar.js"></script>
+
+    <script src="../../src/draw/DrawToolbar.js"></script>
+    <script src="../../src/edit/EditToolbar.js"></script>
+    <script src="../../src/edit/handler/EditToolbar.Edit.js"></script>
+    <script src="../../src/edit/handler/EditToolbar.Delete.js"></script>
 
     <!-- Load Esri Leaflet from CDN -->
     <script src="https://unpkg.com/esri-leaflet@2.1.1/dist/esri-leaflet.js" integrity="sha512-ECQqaYZke9cSdqlFG08zSkudgrdF6I1d8ViSa7I3VIszJyVqw4ng1G8sehEXlumdMnFYfzY0tMgdQa4WCs9IUw=="
@@ -51,10 +84,10 @@
     <div class="right-layout-frame">
         <div id="review_tools" class="review_tools">
             <h3>Mark the Image with Damage Assessments</h3>
-            <span class="affected_spn tool_spn"><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'/>Mark Buildings as Affected</span><br/>
-            <span class="impacted_spn tool_spn"><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'/>Mark Buildings as Impacted</span><br/>
-            <span class="damaged_spn tool_spn"><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'/>Mark Buildings as Damaged</span><br/>
-            <span class="destroyed_spn tool_spn"><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'/>Mark Buildings as Destroyed</span><br/><br/>
+            <span class="affected_spn tool_spn"><input type="radio" name="btn_DamageMarker" id="btn_DamageMarkerAffected" value="BLDG_A" size="5" onclick='set_markertool("affected");'/>Mark Buildings as Affected</span><br/>
+            <span class="impacted_spn tool_spn"><input type="radio" name="btn_DamageMarker" id="btn_DamageMarkerImpacted" value="BLDG_I" size="5" onclick='set_markertool("impacted");'/>Mark Buildings as Impacted</span><br/>
+            <span class="damaged_spn tool_spn"><input type="radio" name="btn_DamageMarker" id="btn_DamageMarkerDamaged" value="BLDG_D" size="5" onclick='set_markertool("damaged");'/>Mark Buildings as Damaged</span><br/>
+            <span class="destroyed_spn tool_spn"><input type="radio" name="btn_DamageMarker" id="btn_DamageMarkerDestroyed" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'/>Mark Buildings as Destroyed</span><br/><br/>
             <input class=" tool_spn" type="radio" name="btn_DamageMarker" value="eraser" size="5" onclick='set_markertool("eraser");'
             />Remove All Marks on Image<br/><br/>
 
