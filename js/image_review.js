@@ -108,7 +108,16 @@ function buildLeafletDrawToolbar(map) {
 	});
 	var control = map.addControl(drawControl);
 
+	map.on(L.Draw.Event.DRAWSTART, function (e) {
+		if ($("input[name=btn_DamageMarker][value=eraser]:checked").length === 1  || $("input[name=btn_DamageMarker]:checked").length === 0 ) {
+			$("input[name=btn_DamageMarker][value=BLDG_A]").prop("checked", "checked");
+			setDrawingOptions(damageMarkers['affected']);			
+		}
+	});
+
 	map.on(L.Draw.Event.CREATED, function (e) {
+		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");			
+		
 		var type = e.layerType,
 			layer = e.layer;
 
@@ -467,17 +476,19 @@ function checkProtocol() {
 
 function set_markertool(severity) {
 	if (severity != "eraser") {
-		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
 		if (USE_LEAFLET) {
 			setDrawingOptions(damageMarkers[severity]);
 			$('a[title="Draw a circlemarker"] span').click();
 		} else {
+			$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
 			removeMarkerTool();
 			addMarkerTool(severity);
 		}
 	} else {
+		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "");		
 		if (USE_LEAFLET) {
 			assessment_features.clearLayers();
+			// $('a[title="Cancel drawing"]').click();	// Doesn't work		
 		} else {
 			assessment_features.clear();
 		}
