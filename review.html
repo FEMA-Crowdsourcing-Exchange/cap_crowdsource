@@ -4,15 +4,6 @@
 <head>
     <meta charset="utf-8" />
     <title>CAP Image Damage Assessment</title>
-    <!-- <script>
-        function checkProtocol() {
-            console.log("document.location.protocol", document.location.protocol);
-            if (window.location.protocol === "https:") {
-                window.location.href = "http:" + window.location.href.substring(window.location.protocol.length);
-            }
-        }
-        checkProtocol();
-    </script> -->
     <link rel="stylesheet" href="css/image_review.css" type="text/css">
     <link rel="stylesheet" href="https://openlayers.org/en/v4.3.1/css/ol.css" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -35,13 +26,13 @@
     <!-- Load Esri Leaflet from CDN -->
     <script src="https://unpkg.com/esri-leaflet@2.1.1/dist/esri-leaflet.js" integrity="sha512-ECQqaYZke9cSdqlFG08zSkudgrdF6I1d8ViSa7I3VIszJyVqw4ng1G8sehEXlumdMnFYfzY0tMgdQa4WCs9IUw=="
         crossorigin=""></script>
+
     <script src="js/image_review.js"></script>
 </head>
 
 <body onload="init_map()">
     <div class="container-fluid">
-        <!-- <div class="left-layout-frame"> -->
-        <div class="panel col-xs-6 col-md-7 col-lg-8 col-xl-10">
+        <div class="panel review_map_panel col-xs-6 col-md-7 col-lg-8 col-xl-10">
             <div id="map" class="map col-xl-12"> </div>
             <div id="navigation" class="navigation">
 
@@ -50,45 +41,46 @@
                 <button type="button" class="nav btn btn-primary" onclick='save_next_image();'><span class="hidden-xs hidden-sm">Skip<span class="visible-lg-inline-block"> - Next Image</span>&nbsp;</span><em class="glyphicon glyphicon-chevron-right"></em></button>
             </div>
         </div>
-        <!-- <div class="right-layout-frame"> -->
-        <div class="panel col-xs-offset-1 col-xs-5 col-md-4 col-lg-3 col-xl-1">
-            <!-- <div id="review_tools" class="review_tools col-xs-12"> -->
-            <div id="review_tools">
-                <h3>Mark the Image with Damage Assessments</h3>
-                <div class="radio affected_spn tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark Buildings as </span>Affected</label>
+        <div class="col-xs-6 col-md-5 col-lg-4 col-xl-2">
+            <div class="col-xs-offset-1 col-xs-11">
+                <div id="review_tools">
+                    <h3>Mark the Image with Damage Assessments</h3>
+                    <div class="radio affected_spn tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark Buildings as </span>Affected</label>
+                    </div>
+                    <div class="radio impacted_spn tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'><span class="hidden-xs">Mark Buildings as </span>Impacted</label>
+                    </div>
+                    <div class="radio damaged_spn tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'><span class="hidden-xs">Mark Buildings as </span>Damaged</label>
+                    </div>
+                    <div class="radio destroyed_spn tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark Buildings as </span>Destroyed</label>
+                    </div>
+                    <div class="radio tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="eraser" size="5" onclick='set_markertool("eraser");'><span class="hidden-xs">Remove All Marks on Image</span><span class="visible-xs-inline-block">Remove Marks</span></label>
+                    </div>
+
+                    <div class="radio tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="impct" size="5" onclick='set_general("impact");'><span class="hidden-xs">In General, Impact is shown in Image</span><span class="visible-xs-inline-block">Impact shown</span></label>
+                    </div>
+                    <div class="radio tool_spn">
+                        <label><input type="radio" name="btn_DamageMarker" value="non-impct" size="5" onclick='set_general("noimpact");'><span class="hidden-xs">In General, No Impact in Images</span><span class="visible-xs-inline-block">No Impact</span></label>
+                    </div>
                 </div>
-                <div class="radio impacted_spn tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'><span class="hidden-xs">Mark Buildings as </span>Impacted</label>
+                <div id="image_info">
+                    <b>Image Info:</b><br/>
+                    <b class="piLbl">Event:</b> <span id='eventname'>&lt;Event Name&gt;</span><br/>
+                    <b class="piLbl">Team:</b> <span id='teamname'>&lt;Team&gt;</span><br/>
+                    <b class="piLbl">Mission:</b> <span id='missionname'>&lt;Mission&gt;</span><br/>
+                    <b class="piLbl">Photo Date:</b> <span id='photo_date'>&lt;date&gt;</span><br/>
+                    <b class="piLbl">Altitude:</b> <span id='photo_altitude'>&lt;altitude&gt;</span>(m)<br/>
                 </div>
-                <div class="radio damaged_spn tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'><span class="hidden-xs">Mark Buildings as </span>Damaged</label>
-                </div>
-                <div class="radio destroyed_spn tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark Buildings as </span>Destroyed</label>
-                </div>
-                <div class="radio tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="eraser" size="5" onclick='set_markertool("eraser");'><span class="hidden-xs">Remove All Marks on Image</span><span class="visible-xs-inline-block">Remove Marks</span></label>
+                <div class="overview_map_container">
+                    <div id="overview_map" class="overview_map"> </div>
                 </div>
 
-                <div class="radio tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="impct" size="5" onclick='set_general("impact");'><span class="hidden-xs">In General, Impact is shown in Image</span><span class="visible-xs-inline-block">Impact shown</span></label>
-                </div>
-                <div class="radio tool_spn">
-                    <label><input type="radio" name="btn_DamageMarker" value="non-impct" size="5" onclick='set_general("noimpact");'><span class="hidden-xs">In General, No Impact in Images</span><span class="visible-xs-inline-block">No Impact</span></label>
-                </div>
             </div>
-            <!-- <div id="image_info" class="image_info col-xs-12"> -->
-            <div id="image_info">
-                <b>Image Info:</b><br/>
-                <b class="piLbl">Event:</b> <span id='eventname'>&lt;Event Name&gt;</span><br/>
-                <b class="piLbl">Team:</b> <span id='teamname'>&lt;Team&gt;</span><br/>
-                <b class="piLbl">Mission:</b> <span id='missionname'>&lt;Mission&gt;</span><br/>
-                <b class="piLbl">Photo Date:</b> <span id='photo_date'>&lt;date&gt;</span><br/>
-                <b class="piLbl">Altitude:</b> <span id='photo_altitude'>&lt;altitude&gt;</span>(m)<br/>
-            </div>
-            <div id="overview_map" class="overview_map col-xs-12"> </div>
-
         </div>
     </div>
 

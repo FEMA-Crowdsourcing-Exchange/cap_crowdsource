@@ -1,4 +1,13 @@
-html, body {
+/* Medium devices (desktops, 992px and up) */
+@media (max-width: 991px) {
+	div.overview_map_container {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+}
+
+html,
+body {
 	min-width: 463px;
 	height: 100%;
 }
@@ -17,76 +26,42 @@ div.panel {
 }
 
 div#map.map {
-	/* position: absolute;
-	float: left; */
 	top: 1%;
 	height: 90%;
 	width: 100%;
 	z-index: 1;
-	/* height: 600px; */
-	margin-top: 20px;	
+	margin-top: 20px;
 	display: block;
 }
 
 div.overview_map {
-	/* width: 300px; */
-	width: 100%;	
 	height: 300px;
 	display: block;
-	margin-top: 20px;
+	margin-top: 15px;
 }
 
 div.navigation {
-	/* width: 500px; */
-	/* height: 30px; */
 	display: block;
 	margin-top: 15px;
 	text-align: center;
 }
 
-div.navigation > button.nav:first-of-type {
+div.navigation>button.nav:first-of-type {
 	margin-left: 0px;
 }
 
-div.review_tools {
-	width: 300px;
-	/* #display: block; */
-	font-size: 80%;
-}
-
-div.image_info {
-	width: 300px;
-	/* #display: block; */
+div#image_info {
 	font-size: 80%;
 	margin-top: 8px;
-	padding: 5px;
+	padding: 5px 0px;
 	border-radius: 5pt;
 	border-style: solid;
 	border-width: medium;
 	border-color: grey;
 }
 
-div.right-layout-frame {
-	/* #display: block; */
-	float: right;
-	/* #width: 180px; */
-	margin-right: 20px;
-}
-
-div.left-layout-frame {
-	/* #display: block; */
-	float: left;
-	width: auto;
-	text-align: center;
-}
-
 button.nav {
-	/* margin-left: 15px; */
 	padding: 5px;
-}
-
-button.nav1 {
-	margin-right: 10px;
 }
 
 b.piLbl {
@@ -126,8 +101,4 @@ b.piLbl {
 
 .destroyed_spn {
 	background-color: #f03b20;
-}
-
-.destroyedx_spn {
-	background-color: #bd0026;
 }
