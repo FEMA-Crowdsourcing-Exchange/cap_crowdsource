@@ -32,43 +32,46 @@
 
 <body onload="init_map()">
     <div class="container-fluid">
-        <div class="panel review_map_panel col-xs-6 col-md-7 col-lg-8 col-xl-10">
+        <div class="panel review_map_panel col-xs-12 col-md-7 col-xl-10">
             <div id="map" class="map col-xl-12"> </div>
             <div id="navigation" class="navigation">
-
-                <button type="button" class="nav btn btn-primary" onclick='previous_image();'><em class="glyphicon glyphicon-chevron-left"></em><span class="hidden-xs hidden-sm">&nbsp;Previous</span><span class="visible-lg-inline-block"> Image</span></button>
-                <button type="button" class="nav btn btn-primary" onclick='next_image();'><em class="glyphicon glyphicon-floppy-save"></em>&nbsp;Save - Next<span class="visible-lg-inline-block"> Image</span></button>
-                <button type="button" class="nav btn btn-primary" onclick='save_next_image();'><span class="hidden-xs hidden-sm">Skip<span class="visible-lg-inline-block"> - Next Image</span>&nbsp;</span><em class="glyphicon glyphicon-chevron-right"></em></button>
+                <button type="button" class="nav btn btn-primary" onclick='previous_image();'><em class="glyphicon glyphicon-chevron-left"></em><span class="">&nbsp;Previous</span><span class="hidden-xs"> Image</span></button>
+                <button type="button" class="nav btn btn-primary" onclick='next_image();'><em class="glyphicon glyphicon-floppy-save"></em>&nbsp;Save - Next<span class="hidden-xs"> Image</span></button>
+                <button type="button" class="nav btn btn-primary" onclick='save_next_image();'><span class="">Skip<span class="hidden-xs"> - Next Image</span>&nbsp;</span><em class="glyphicon glyphicon-chevron-right"></em></button>
             </div>
         </div>
-        <div class="col-xs-6 col-md-5 col-lg-4 col-xl-2">
-            <div class="col-xs-offset-1 col-xs-11">
-                <div id="review_tools">
-                    <h3>Mark the Image with Damage Assessments</h3>
-                    <div class="radio affected_spn tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark Buildings as </span>Affected</label>
+        <div class="damage_content col-xs-12 col-md-5 col-xl-2">
+            <div class="damage_assess_container col-sm-6 col-md-12">
+                <h3>Mark the Image with Damage Assessments</h3>
+                <div id="review_tools" class="col-xs-6 col-sm-7 col-md-12">
+                    <div class="damage_markers col-xs-6">
+                        <div class="radio affected_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Affected</label>
+                        </div>
+                        <div class="radio impacted_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Impacted</label>
+                        </div>
+                        <div class="radio damaged_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Damaged</label>
+                        </div>
+                        <div class="radio destroyed_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Destroyed</label>
+                        </div>
                     </div>
-                    <div class="radio impacted_spn tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'><span class="hidden-xs">Mark Buildings as </span>Impacted</label>
-                    </div>
-                    <div class="radio damaged_spn tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'><span class="hidden-xs">Mark Buildings as </span>Damaged</label>
-                    </div>
-                    <div class="radio destroyed_spn tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark Buildings as </span>Destroyed</label>
-                    </div>
-                    <div class="radio tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="eraser" size="5" onclick='set_markertool("eraser");'><span class="hidden-xs">Remove All Marks on Image</span><span class="visible-xs-inline-block">Remove Marks</span></label>
-                    </div>
+                    <div class="col-xs-6">
+                        <div class="radio tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="eraser" size="5" onclick='set_markertool("eraser");'><span class="hidden-xs hidden-sm">Remove All Marks on Image</span><span class="visible-xs-inline-block visible-sm-inline-block">Remove Marks</span></label>
+                        </div>
 
-                    <div class="radio tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="impct" size="5" onclick='set_general("impact");'><span class="hidden-xs">In General, Impact is shown in Image</span><span class="visible-xs-inline-block">Impact shown</span></label>
-                    </div>
-                    <div class="radio tool_spn">
-                        <label><input type="radio" name="btn_DamageMarker" value="non-impct" size="5" onclick='set_general("noimpact");'><span class="hidden-xs">In General, No Impact in Images</span><span class="visible-xs-inline-block">No Impact</span></label>
+                        <div class="radio tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="impct" size="5" onclick='set_general("impact");'><span class="hidden-xs hidden-sm">In General, Impact is shown in Image</span><span class="visible-xs-inline-block visible-sm-inline-block">Impact shown</span></label>
+                        </div>
+                        <div class="radio tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="non-impct" size="5" onclick='set_general("noimpact");'><span class="hidden-xs hidden-sm">In General, No Impact in Images</span><span class="visible-xs-inline-block visible-sm-inline-block">No Impact</span></label>
+                        </div>
                     </div>
                 </div>
-                <div id="image_info">
+                <div id="image_info" class="col-xs-5 col-md-12">
                     <b>Image Info:</b><br/>
                     <b class="piLbl">Event:</b> <span id='eventname'>&lt;Event Name&gt;</span><br/>
                     <b class="piLbl">Team:</b> <span id='teamname'>&lt;Team&gt;</span><br/>
@@ -76,10 +79,9 @@
                     <b class="piLbl">Photo Date:</b> <span id='photo_date'>&lt;date&gt;</span><br/>
                     <b class="piLbl">Altitude:</b> <span id='photo_altitude'>&lt;altitude&gt;</span>(m)<br/>
                 </div>
-                <div class="overview_map_container">
-                    <div id="overview_map" class="overview_map"> </div>
-                </div>
-
+            </div>
+            <div class="overview_map_container col-xs-12 col-sm-6 col-md-12">
+                <div id="overview_map" class="overview_map"> </div>
             </div>
         </div>
     </div>

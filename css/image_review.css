@@ -1,8 +1,26 @@
-/* Medium devices (desktops, 992px and up) */
+/* Small devices (tablets, 991px and below) */
+
 @media (max-width: 991px) {
-	div.overview_map_container {
+	div.overview_map_container,
+	div.damage_assess_container,
+	div#image_info {
 		padding-left: 0px;
 		padding-right: 0px;
+	}
+	div.panel.review_map_panel {
+		height: 50%;
+	}
+	div.damage_content {
+		margin-top: 2.5%;
+	}
+}
+
+
+/* Small devices (tablets, 768px up to desktop) */
+
+@media (min-width: 768px) and (max-width: 991px) {
+	div.damage_assess_container {
+		padding-right: 15px;
 	}
 }
 
@@ -41,6 +59,7 @@ div.overview_map {
 }
 
 div.navigation {
+	height: 10%;
 	display: block;
 	margin-top: 15px;
 	text-align: center;
@@ -50,10 +69,20 @@ div.navigation>button.nav:first-of-type {
 	margin-left: 0px;
 }
 
+div.damage_assess_container>h3 {
+	text-align: center;
+}
+
+div#review_tools,
+div#review_tools>div.damage_markers {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
 div#image_info {
 	font-size: 80%;
 	margin-top: 8px;
-	padding: 5px 0px;
+	padding: 5px;
 	border-radius: 5pt;
 	border-style: solid;
 	border-width: medium;
