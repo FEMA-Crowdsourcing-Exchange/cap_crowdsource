@@ -15,6 +15,7 @@
 	}
 }
 
+
 /* Small devices (tablets, 768px up to desktop) */
 
 @media (min-width: 768px) and (max-width: 991px) {
@@ -78,6 +79,13 @@ div#review_tools>div.damage_markers {
 	padding-right: 0px;
 }
 
+div#review_tools div.btn {
+	text-align: left;
+	max-width: 280px;
+	border: 1px solid black;
+	white-space: normal;
+}
+
 div#image_info {
 	font-size: 80%;
 	margin-top: 8px;
@@ -129,4 +137,13 @@ b.piLbl {
 
 .destroyed_spn {
 	background-color: #f03b20;
+}
+
+.affected_spn:hover,
+.impacted_spn:hover,
+.damaged_spn:hover,
+.destroyed_spn:hover {
+	opacity: 0.5;
+	filter: alpha(opacity=50);
+	/* For IE8 and earlier */
 }
