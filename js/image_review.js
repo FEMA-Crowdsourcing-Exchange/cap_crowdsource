@@ -1,6 +1,8 @@
 // image_review.js
 
 // GLOBALS
+var $ = window.$;
+var L = window.L;
 var USE_LEAFLET = true;
 var REPLACE_SRC = false;
 var OVR_ZOOM = 14;
@@ -11,6 +13,9 @@ var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
 // var IMG_CENTER = [600, 400];
 var IMG_SCALE = Math.pow(2, IMG_ZOOM);
 var IMG_CENTER = [-IMG_DEFAULT_SIZE[3]/IMG_SCALE, IMG_DEFAULT_SIZE[2]/IMG_SCALE];
+var IMG_HISTORY_LEN = 5;
+var Icons = createIcons();
+console.log("Icons", Icons);
 var eventId;
 var image_history = [];
 var current_image = {};
@@ -33,8 +38,7 @@ var damageMarkers = { // Marker = Severity: 'hex color'
 var setDrawingOptions; // exposing function globally
 
 
-$.ajaxPrefilter(function (options, originalOptions, xhr) {
-	var url = options.url;
+$.ajaxPrefilter(function (options) {
 	if (options.crossDomain && window.location.host === "localhost:8888") {
 		// var newData = {};
 		// // Copy the options.data object to the newData.data property.
@@ -174,6 +178,18 @@ function buildLeafletDrawToolbar(map) {
 	}
 }
 
+function createIcons() {
+	return {"camera": L.icon({
+		iconUrl: 'img/camera.png',
+		iconSize: [30, 30],
+		iconAnchor: [14, 29]//,
+		// popupAnchor: [-3, -76],
+		// shadowUrl: 'my-icon-shadow.png',
+		// shadowSize: [68, 95],
+		// shadowAnchor: [22, 94]
+	})};
+}
+
 function init_review_map() {
 	// dimensions of the image
 	var url = 'https://imgs.xkcd.com/comics/online_communities.png';
@@ -251,6 +267,8 @@ function init_overview_map() {
 	if (USE_LEAFLET == true) {
 		overview_map = L.map("overview_map").setView([39, -97.5], 4);
 		L.esri.basemapLayer("Imagery").addTo(overview_map);
+		overview_features = new L.FeatureGroup();
+		overview_map.addLayer(overview_features);	
 	} else {
 		// Map views always need a projection.  Here we just want to map image
 		// coordinates directly to map coordinates, so we create a projection that uses
@@ -329,6 +347,10 @@ function checkProtocol() {
 
 function set_overview_image(image) {
 	if (USE_LEAFLET == true) {
+		overview_features.clearLayers();
+		var marker = L.marker([parseFloat(image["Latitude"]), parseFloat(image["Longitude"])], {icon: Icons['camera']})
+		overview_features.addLayer(marker);
+		
 		overview_map.setView(
 			[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
 			OVR_ZOOM
@@ -439,9 +461,10 @@ function apply_image_info(data) {
 	set_review_image(jsonData);
 }
 
-// function previous_image() {
-// 	return;
-// }
+function previous_image() {
+	console.log("previous_image");
+	return;
+}
 
 // function save_next_image() {
 // 	var WKT = new ol.format.WKT();
