@@ -47,10 +47,6 @@ function activate() {
 			// options = {};
 
 			// Set the proxy URL
-			// options.beforeSend = function (xhr) {
-			// 	xhr.setRequestHeader('Host', 'localhost:8888');
-			// 	xhr.setRequestHeader('Origin', 'localhost:8888');
-			// }
 			if (options.url[0] === "/") options.url = "http://127.0.0.1:8888" + options.url;
 
 			// options.data = $.param(newData);
