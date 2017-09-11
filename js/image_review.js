@@ -8,13 +8,16 @@ var OVR_ZOOM = 14;
 var IMG_ZOOM = 2;
 // var IMG_DEFAULT_SIZE = [0, 0, 1200, 800];
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
-var IMG_CENTER = [600, 400];
+// var IMG_CENTER = [600, 400];
+var IMG_SCALE = Math.pow(2, IMG_ZOOM);
+var IMG_CENTER = [-IMG_DEFAULT_SIZE[3]/IMG_SCALE, IMG_DEFAULT_SIZE[2]/IMG_SCALE];
 var eventId;
 var image_history = [];
 var current_image = {};
 var sample_image_json =
 	'{"Altitude":342.00,"AverageVoteLevel":null,"CalculatedHeading":-1.00,"DatePointTimeOffset":0,"EXIFFocalLength":200.00,"EXIFPhotoDate":"/Date(1504194601000+0000)/","EventId":9073,"EventName":"CAP - Hurricane Harvey","Filename":"DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Heading":-1.00,"Id":"e84a2184-76e4-4e64-8340-95439efea971","ImageArchived":false,"ImageEventImagesId":null,"ImageMissionId":613531,"ImageTypeId":1,"ImageURL":"https://fema-cap-imagery.s3.amazonaws.com/Images/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Latitude":27.674026,"Longitude":-97.538701,"MaxVoteLevel":null,"MinVoteLevel":null,"MissionName":"S0831A","NMEAPoint_Id":0,"NumberOfVotes":0,"OffsetHeading":0.00,"OffsetSeconds":null,"PhotoUSNG":"14R PR 4461","Shape":{"Geography":{"CoordinateSystemId":4326,"WellKnownText":"POINT (-97.5387016666667 27.6740266666667)"}},"TargetUSNG":null,"TeamName":"HARVEY CSR","ThumbnailURL":"https://fema-cap-imagery.s3.amazonaws.com/Thumbs/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","VirtualID":"bd24b7ca-36cc-49c1-afb5-00045e3665fa"}';
 var map;
+var bounds;
 var overview_map;
 var overview_features;
 var assessment_features;
@@ -48,7 +51,7 @@ $.ajaxPrefilter(function (options, originalOptions, xhr) {
 			xhr.setRequestHeader('Origin', 'localhost:8888');
 		}
 		if (options.url[0] === "/") options.url = "http://127.0.0.1:8888" + options.url;
-		
+
 		// options.data = $.param(newData);
 	} else {
 		options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
@@ -181,7 +184,7 @@ function init_review_map() {
 		map = L.map('map', {
 			minZoom: 0,
 			maxZoom: OVR_ZOOM,
-			center: [0, 0],
+			center: IMG_CENTER,
 			zoom: IMG_ZOOM,
 			crs: L.CRS.Simple // Coordinates in CRS.Simple take the form of [y, x] instead of [x, y], in the same way Leaflet uses [lat, lng] instead of [lng, lat].
 		});
@@ -189,7 +192,8 @@ function init_review_map() {
 		// calculate the edges of the image, in coordinate space
 		var southWest = map.unproject([0, IMG_DEFAULT_SIZE[3]], IMG_ZOOM - 1);
 		var northEast = map.unproject([IMG_DEFAULT_SIZE[2], 0], IMG_ZOOM - 1);
-		var bounds = new L.LatLngBounds(southWest, northEast);
+		// var bounds = new L.LatLngBounds(southWest, northEast);
+		bounds = new L.LatLngBounds(southWest, northEast);
 
 		// add the image overlay, 
 		// so that it covers the entire map
@@ -356,12 +360,9 @@ function set_review_image(image) {
 	var extent = IMG_DEFAULT_SIZE;
 	if (USE_LEAFLET == true) {
 		assessment_features.clearLayers();
-		map.removeLayer(imageLyr);
-		L.imageOverlay(image["ImageURL"], bounds).addTo(map);
-
-		var vw = map.getView();
-		vw.setZoom(IMG_ZOOM);
-		vw.setCenter([0, 0]);
+		if (imageLyr) map.removeLayer(imageLyr);
+		map.setView(IMG_CENTER, IMG_ZOOM);
+		imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
 	} else {
 		var projection = new ol.proj.Projection({
 			code: "CAP-image",
@@ -477,7 +478,6 @@ function addMarkerTool(cls) {
 
 function removeMarkerTool() {
 	var result = map.removeInteraction(draw_tool);
-	console.log("remove tool: ", result);
 }
 
 function set_markertool(severity) {
