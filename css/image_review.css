@@ -24,6 +24,14 @@
 	}
 }
 
+/* Medium devices (desktops, 992px and up) */
+
+@media (min-width: 992px) {
+	div.damage_assess_container {
+		margin-top: 10px;
+	}
+}
+
 html,
 body {
 	min-width: 463px;
@@ -41,6 +49,7 @@ div {
 
 div.panel {
 	height: 100%;
+	margin-bottom: 0px;
 }
 
 div#map.map {
@@ -59,7 +68,7 @@ div.overview_map {
 }
 
 div.navigation {
-	height: 10%;
+	height: 46px;
 	display: block;
 	margin-top: 15px;
 	text-align: center;
