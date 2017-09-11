@@ -1,14 +1,13 @@
-## proxy_svc.py
+## win_proxy_svc.py
 
 import SocketServer
 import SimpleHTTPServer
-# import urllib
 import urllib2
 from config_env import *  
 
 if config["env"] == "dev":
 
-  PORT = 8888
+  PORT = config["proxyPort"] or 8888
   if config["proxy"] == "true":
     proxyHandler = {}
     proxyHandler[config["proxyProtocol"]] = config["proxyUrl"]
@@ -22,7 +21,7 @@ if config["env"] == "dev":
             self.send_response(200, 'OK')
             self.send_header('Content-type', 'application/json')
             self.send_header('Origin', '*')
-            self.send_header('Host', config["host"])
+            self.send_header('Host', config["host"] + ":" + str(PORT))
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             newURL = "http://imageryuploader.geoplatform.gov" + self.path
@@ -35,7 +34,6 @@ if config["env"] == "dev":
             #newURL = self.path[1:]
 
   
-  # httpd = SocketServer.ForkingTCPServer(('', PORT), Proxy)
   httpd = SocketServer.ThreadingTCPServer(('', PORT), Proxy)
   print "serving at port", PORT
   httpd.serve_forever()

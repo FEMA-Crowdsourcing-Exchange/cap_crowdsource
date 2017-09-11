@@ -30,31 +30,29 @@ var damageMarkers = { // Marker = Severity: 'hex color'
 var setDrawingOptions; // exposing function globally
 
 
-$.ajaxPrefilter(function (options) {
-	console.log("ajaxPrefilter - options", options);
+$.ajaxPrefilter(function (options, originalOptions, xhr) {
 	var url = options.url;
-	if (options.crossDomain) {
-		var newData = {};
-		// Copy the options.data object to the newData.data property.
-		// We need to do this because javascript doesn't deep-copy variables by default.
-		newData.data = $.extend({}, options.data);
-		newData.url = options.url;
+	if (options.crossDomain && window.location.host === "localhost:8888") {
+		// var newData = {};
+		// // Copy the options.data object to the newData.data property.
+		// // We need to do this because javascript doesn't deep-copy variables by default.
+		// newData.data = $.extend({}, options.data);
+		// newData.url = options.url;
 
 		// Reset the options object - we'll re-populate in the following lines.
-		options = {};
+		// options = {};
 
 		// Set the proxy URL
-		options.beforeSend = function (xhr) { 
-            xhr.setRequestHeader('Host', 'localhost:8888');
-            xhr.setRequestHeader('Origin', 'localhost:8888');
-        }
-
-		options.url = "http://127.0.0.1:8888/";
-		options.data = $.param(newData);
-		// options.url = "http://127.0.0.1:8888" + encodeURIComponent( url );		
-		// options.crossDomain = false;
+		options.beforeSend = function (xhr) {
+			xhr.setRequestHeader('Host', 'localhost:8888');
+			xhr.setRequestHeader('Origin', 'localhost:8888');
+		}
+		if (options.url[0] === "/") options.url = "http://127.0.0.1:8888" + options.url;
+		
+		// options.data = $.param(newData);
+	} else {
+		options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
 	}
-	console.log("ajaxPrefilter(end) - options", options);	
 });
 
 function build_styleSets() {
@@ -401,9 +399,8 @@ function next_image() {
 		apply_image_info(sample_image_json);
 	} else {
 		$.ajax({
-			url: "http://127.0.0.1:8888/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
-			// url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
-			processData: false, 
+			url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
+			processData: false,
 			crossDomain: true
 		}).success(apply_image_info);
 	}
