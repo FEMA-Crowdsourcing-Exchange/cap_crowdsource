@@ -12,10 +12,9 @@ var IMG_ZOOM = 2;
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
 // var IMG_CENTER = [600, 400];
 var IMG_SCALE = Math.pow(2, IMG_ZOOM);
-var IMG_CENTER = [-IMG_DEFAULT_SIZE[3]/IMG_SCALE, IMG_DEFAULT_SIZE[2]/IMG_SCALE];
+var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / IMG_SCALE, IMG_DEFAULT_SIZE[2] / IMG_SCALE];
 var IMG_HISTORY_LEN = 5;
 var Icons = createIcons();
-console.log("Icons", Icons);
 var eventId;
 var image_history = [];
 var current_image = {};
@@ -146,15 +145,18 @@ function buildLeafletDrawToolbar(map) {
 	map.on(L.Draw.Event.DRAWSTART, function (e) {
 		if ($("input[name=btn_DamageMarker][value=eraser]:checked").length === 1 || $("input[name=btn_DamageMarker]:checked").length === 0) {
 			$("input[name=btn_DamageMarker][value=BLDG_A]").prop("checked", "checked");
-			setDrawingOptions(damageMarkers['affected']);
+			setDrawingOptions('affected');
 		}
 	});
 
 	map.on(L.Draw.Event.CREATED, function (e) {
 		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
-
+		console.log("Created", e);
 		var type = e.layerType,
 			layer = e.layer;
+		layer.properties = {
+			"severity": layer.options.attribution
+		};
 
 		assessment_features.addLayer(layer);
 	});
@@ -168,10 +170,11 @@ function buildLeafletDrawToolbar(map) {
 		console.log("Edited " + countOfEditedLayers + " layers");
 	});
 
-	setDrawingOptions = function (color) {
+	setDrawingOptions = function (severity) {
 		drawControl.setDrawingOptions({
 			circlemarker: {
-				color: color
+				attribution: severity,
+				color: damageMarkers[severity]
 			}
 		});
 
@@ -179,15 +182,32 @@ function buildLeafletDrawToolbar(map) {
 }
 
 function createIcons() {
-	return {"camera": L.icon({
-		iconUrl: 'img/camera.png',
-		iconSize: [30, 30],
-		iconAnchor: [14, 29]//,
-		// popupAnchor: [-3, -76],
-		// shadowUrl: 'my-icon-shadow.png',
-		// shadowSize: [68, 95],
-		// shadowAnchor: [22, 94]
-	})};
+	return {
+		"camera": L.icon({
+			iconUrl: 'img/camera.png',
+			iconSize: [30, 30],
+			iconAnchor: [14, 29]
+		})
+	};
+}
+
+function featuresToGeoJSON(featureCollection) {
+	return {
+		"features": Object.keys(featureCollection).map(function (feature) {
+			var data = featureCollection[feature];
+			return {
+				"geometry": {
+					"coordinates": [data._latlng.lng, data._latlng.lat],
+					"type": "Point"
+				},
+				"properties": $.extend({}, data.properties, {
+					"Point": data._point
+				}),
+				"type": "Feature"
+			}
+		}),
+		"type": "FeatureCollection"
+	};
 }
 
 function init_review_map() {
@@ -268,7 +288,7 @@ function init_overview_map() {
 		overview_map = L.map("overview_map").setView([39, -97.5], 4);
 		L.esri.basemapLayer("Imagery").addTo(overview_map);
 		overview_features = new L.FeatureGroup();
-		overview_map.addLayer(overview_features);	
+		overview_map.addLayer(overview_features);
 	} else {
 		// Map views always need a projection.  Here we just want to map image
 		// coordinates directly to map coordinates, so we create a projection that uses
@@ -348,9 +368,11 @@ function checkProtocol() {
 function set_overview_image(image) {
 	if (USE_LEAFLET == true) {
 		overview_features.clearLayers();
-		var marker = L.marker([parseFloat(image["Latitude"]), parseFloat(image["Longitude"])], {icon: Icons['camera']})
+		var marker = L.marker([parseFloat(image["Latitude"]), parseFloat(image["Longitude"])], {
+			icon: Icons['camera']
+		})
 		overview_features.addLayer(marker);
-		
+
 		overview_map.setView(
 			[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
 			OVR_ZOOM
@@ -466,18 +488,22 @@ function previous_image() {
 	return;
 }
 
-// function save_next_image() {
-// 	var WKT = new ol.format.WKT();
+function save_next_image() {
+	if (USE_LEAFLET == true) {
+		var geoJSON = featuresToGeoJSON(assessment_features._layers);
+		console.log("geoJSON", geoJSON);
+	} else {
+		var WKT = new ol.format.WKT();
 
-// 	var active_features = assessment_features.getFeatures();
-// 	for (var idx = 0; idx < active_features.length; idx++) {
-// 		var px = active_features[idx].getProperties();
-// 		var geom = WKT.writeFeature(active_features[idx], {});
-// 		console.log(px, geom);
-// 	}
-
-// 	next_image();
-// }
+		var active_features = assessment_features.getFeatures();
+		for (var idx = 0; idx < active_features.length; idx++) {
+			var px = active_features[idx].getProperties();
+			var geom = WKT.writeFeature(active_features[idx], {});
+			console.log(px, geom);
+		}
+	}
+	next_image();
+}
 
 function addMarkerTool(cls) {
 	var myCls = cls;
@@ -506,7 +532,7 @@ function removeMarkerTool() {
 function set_markertool(severity) {
 	if (severity != "eraser") {
 		if (USE_LEAFLET) {
-			setDrawingOptions(damageMarkers[severity]);
+			setDrawingOptions(severity);
 			$('a[title="Draw a circlemarker"] span').click();
 		} else {
 			$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
