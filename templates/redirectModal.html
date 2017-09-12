@@ -1,0 +1,18 @@
+<!-- Modal content-->
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">&times;</button>
+    <h4 class="modal-title">Changing Protocol</h4>
+</div>
+<div class="modal-body">
+    <div id="redirectModalText"></div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+</div>
+<script>
+    $("div#redirectModalText").html("<b><h3>" + window.location.href + " does not support 'https://'</h3>" +
+        "<p>Redirecting to: <a href='http:" + window.location.href.substring(window.location.protocol.length) +
+        "'>http:" + window.location.href.substring(window.location.protocol.length) + "</a></p>" +
+        "<p>Please bookmark and use the link above for future visits.</p></b>"
+    );
+</script>

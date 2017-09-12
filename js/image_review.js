@@ -132,10 +132,6 @@ function buildLeafletDrawToolbar(map) {
 }
 
 function checkProtocol() {
-	$("div#redirectModalText").html("<h3>" + window.location.href + " does not support 'https://'</h3>" +
-		"<p>redirecting to: <a href='http:" + window.location.href.substring(window.location.protocol.length) + "'>http:" + window.location.href.substring(window.location.protocol.length) + "</a></p>" +
-		"<p>Please bookmark and use the link above for future visits.</p>"
-	);
 	if (window.location.protocol === "https:") {
 		setTimeout(function () {
 			window.location.href = "http:" + window.location.href.substring(window.location.protocol.length);
@@ -187,7 +183,7 @@ function featuresToGeoJSON(featureCollection) {
 
 function init_map() {
 	if (!checkProtocol()) {
-		$("#redirectModal").modal();
+		$("#myModal").modal({"remote": "templates/redirectModal.html"});
 		return;
 	}
 	init_review_map();
