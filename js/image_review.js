@@ -1,25 +1,22 @@
 // image_review.js
 /*********** 
 * TODO: 
-* - Set 'No Impact' as default
-* - Clear damage marker radio button upon first load
 * - Change "Remove Marks" radio to button
 * - Create "buildPayload" function for 'save'
 * - Change "Save" button in Leaflet Edit toolbar to "Save Edits"
 * - Change "Save - Next Image" button to "Submit"
 * - Create payload archive
 * - Use payload archive to enable 'Previous Image' functionality
+* - Create tooltip for each btn_DamageMarker
 ***********/
 // GLOBALS
 var $ = window.$;
 var L = window.L;
-var REPLACE_SRC = false;
 var OVR_ZOOM = 14;
 var IMG_ZOOM = 1;
 var IMG_ZOOM_MIN = 0;
 var IMG_ZOOM_MAX = 14;
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
-var IMG_SCALE = Math.pow(2, IMG_ZOOM + 1);
 var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / 4, IMG_DEFAULT_SIZE[2] / 4];
 var IMG_CENTER;
 var IMG_HISTORY_LEN = 5;
@@ -67,6 +64,9 @@ function activate() {
 			options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
 		}
 	});
+	$("input[name=btn_DamageMarker]:checked").each(function(element) {
+		element.prop("checked", false);
+	}, this);
 }
 
 function apply_image_info(data) {
@@ -279,7 +279,7 @@ function set_markertool(severity) {
 		setDrawingOptions(severity);
 		$('a[title="Draw a circlemarker"] span').click();
 	} else {
-		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "");
+		$("input[name=btn_GeneralMarker][value=non-impct]").prop("checked", true);
 		assessment_features.clearLayers();
 		// $('a[title="Cancel drawing"]').click();	// Doesn't work		
 	}

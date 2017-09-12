@@ -139,6 +139,11 @@ b.piLbl {
 	padding-right: 6px;
 }
 
+div#review_tools div.btn.tool_spn.removeMarkers {
+	margin-top: 10px;
+	text-align: center;
+}
+
 .affected_spn {
 	background-color: #ffffcc;
 }
