@@ -5,10 +5,14 @@ var $ = window.$;
 var L = window.L;
 var REPLACE_SRC = false;
 var OVR_ZOOM = 14;
-var IMG_ZOOM = 2;
+var IMG_ZOOM = 1;
+var IMG_ZOOM_MIN = 0;
+var IMG_ZOOM_MAX = 14;
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
-var IMG_SCALE = Math.pow(2, IMG_ZOOM);
-var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / IMG_SCALE, IMG_DEFAULT_SIZE[2] / IMG_SCALE];
+// var IMG_SCALE = Math.pow(2, IMG_ZOOM);
+var IMG_SCALE = Math.pow(2, IMG_ZOOM + 1);
+var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / 4, IMG_DEFAULT_SIZE[2] / 4];
+var IMG_CENTER;
 var IMG_HISTORY_LEN = 5;
 var Icons = createIcons();
 var eventId;
@@ -104,7 +108,6 @@ function buildLeafletDrawToolbar(map) {
 
 	map.on(L.Draw.Event.CREATED, function (e) {
 		$("input[name=btn_GeneralMarker][value=impct]").prop("checked", "checked");
-		console.log("Created", e);
 		var layer = e.layer;
 		layer.properties = {
 			"severity": layer.options.attribution
@@ -183,7 +186,9 @@ function featuresToGeoJSON(featureCollection) {
 
 function init_map() {
 	if (!checkProtocol()) {
-		$("#myModal").modal({"remote": "templates/redirectModal.html"});
+		$("#myModal").modal({
+			"remote": "templates/redirectModal.html"
+		});
 		return;
 	}
 	init_review_map();
@@ -205,17 +210,18 @@ function init_review_map() {
 
 	// Using leaflet.js to pan and zoom an image.
 	// create the map
+
 	map = L.map('map', {
-		minZoom: 0,
-		maxZoom: OVR_ZOOM,
+		minZoom: IMG_ZOOM_MIN,
+		maxZoom: IMG_ZOOM_MAX,
 		center: IMG_CENTER,
 		zoom: IMG_ZOOM,
 		crs: L.CRS.Simple // Coordinates in CRS.Simple take the form of [y, x] instead of [x, y], in the same way Leaflet uses [lat, lng] instead of [lng, lat].
 	});
 
 	// calculate the edges of the image, in coordinate space
-	var southWest = map.unproject([0, IMG_DEFAULT_SIZE[3]], IMG_ZOOM - 1);
-	var northEast = map.unproject([IMG_DEFAULT_SIZE[2], 0], IMG_ZOOM - 1);
+	var southWest = map.unproject([0, IMG_DEFAULT_SIZE[3]], map.getMinZoom() + 1);
+	var northEast = map.unproject([IMG_DEFAULT_SIZE[2], 0], map.getMinZoom() + 1);
 	bounds = new L.LatLngBounds(southWest, northEast);
 
 	// add the image overlay, 
@@ -284,10 +290,15 @@ function set_overview_image(image) {
 }
 
 function set_review_image(image) {
-	console.log("image", image);
 	assessment_features.clearLayers();
-	if (imageLyr) map.removeLayer(imageLyr);
+	if (imageLyr) imageLyr.remove();
 	map.setView(IMG_CENTER, IMG_ZOOM);
-	imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
+	var imageThumbnailLyr = L.imageOverlay(image["ThumbnailURL"], bounds).addTo(map);
+	imageThumbnailLyr.on("load", function () {
+		imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
+		imageLyr.on("load", function () {
+			imageThumbnailLyr.remove();
+		});
+	});
 	set_overview_image(image);
 }
