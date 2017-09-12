@@ -1,5 +1,15 @@
 // image_review.js
-
+/*********** 
+* TODO: 
+* - Set 'No Impact' as default
+* - Clear damage marker radio button upon first load
+* - Change "Remove Marks" radio to button
+* - Create "buildPayload" function for 'save'
+* - Change "Save" button in Leaflet Edit toolbar to "Save Edits"
+* - Change "Save - Next Image" button to "Submit"
+* - Create payload archive
+* - Use payload archive to enable 'Previous Image' functionality
+***********/
 // GLOBALS
 var $ = window.$;
 var L = window.L;
@@ -9,7 +19,6 @@ var IMG_ZOOM = 1;
 var IMG_ZOOM_MIN = 0;
 var IMG_ZOOM_MAX = 14;
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
-// var IMG_SCALE = Math.pow(2, IMG_ZOOM);
 var IMG_SCALE = Math.pow(2, IMG_ZOOM + 1);
 var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / 4, IMG_DEFAULT_SIZE[2] / 4];
 var IMG_CENTER;
