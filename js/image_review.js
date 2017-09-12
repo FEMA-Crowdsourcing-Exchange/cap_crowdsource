@@ -23,10 +23,10 @@ var overview_features;
 var assessment_features;
 var imageLyr;
 var damageMarkers = { // Marker = Severity: 'hex color'
-	"affected": '#0000ff',
-	"impacted": '#0000ff',
-	"damaged": '#FF0000',
-	"destroyed": '#FF0000'
+	"affected": '#ffffcc',
+	"minor": '#ffc000',
+	"major": '#ff7c80',
+	"destroyed": '#9966ff'
 };
 var setDrawingOptions; // exposing function globally
 
@@ -288,6 +288,7 @@ function set_overview_image(image) {
 }
 
 function set_review_image(image) {
+	console.log("image", image);
 	assessment_features.clearLayers();
 	if (imageLyr) map.removeLayer(imageLyr);
 	map.setView(IMG_CENTER, IMG_ZOOM);

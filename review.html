@@ -40,17 +40,18 @@
         </div>
         <div class="damage_content col-xs-12 col-md-5 col-xl-2">
             <div class="damage_assess_container col-sm-7 col-md-12">
-                <h3>Mark the Image with Damage Assessments</h3>
+                <h3 class="header">Mark the Image with Damage Assessments</h3>
+                <a id="imageAnalysisTrainingLink" href="#" onclick='$("#imageAnalysisTraining").modal();'>FEMA:Image Analysis Training</a>                
                 <div id="review_tools" class="col-xs-7 col-md-12">
                     <div class="damage_markers col-xs-6">
                         <div class="btn btn-block radio affected_spn tool_spn">
                             <label><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Affected</label>
                         </div>
-                        <div class="btn btn-block radio impacted_spn tool_spn">
-                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("impacted");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Impacted</label>
+                        <div class="btn btn-block radio minor_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("minor");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Minor</label>
                         </div>
-                        <div class="btn btn-block radio damaged_spn tool_spn">
-                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("damaged");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Damaged</label>
+                        <div class="btn btn-block radio major_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("major");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Major</label>
                         </div>
                         <div class="btn btn-block radio destroyed_spn tool_spn">
                             <label><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Destroyed</label>
@@ -96,6 +97,28 @@
                 </div>
                 <div class="modal-body">
                     <div id="redirectModalText"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="imageAnalysisTraining" role="dialog">
+        <div class="modal-dialog modal-xl">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">FEMA:Image Analysis Training</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- <object data="data/Image_Analysis_Training(optimized).pdf" type="application/pdf" width="300" height="200"></object> -->
+                    <object data="data/Image_Analysis_Training(optimized).pdf" type="application/pdf"> </object>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

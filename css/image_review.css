@@ -78,8 +78,14 @@ div.navigation>button.nav:first-of-type {
 	margin-left: 0px;
 }
 
-div.damage_assess_container>h3 {
+div.damage_assess_container>h3.header {
 	text-align: center;
+	margin-bottom: 0px;
+}
+
+div.damage_assess_container>a#imageAnalysisTrainingLink {
+	text-align: center;
+	display:block;
 }
 
 div#review_tools,
@@ -133,26 +139,53 @@ b.piLbl {
 }
 
 .affected_spn {
-	background-color: #ffffb2;
+	background-color: #ffffcc;
 }
 
-.impacted_spn {
-	background-color: #feee5c;
+.minor_spn {
+	background-color: #ffc000;
 }
 
-.damaged_spn {
-	background-color: #fd8d3c;
+.major_spn {
+	background-color: #ff7c80;
 }
 
 .destroyed_spn {
-	background-color: #f03b20;
+	/* background-color: #f03b20; */
+	background-color: #9966ff;
 }
 
 .affected_spn:hover,
-.impacted_spn:hover,
-.damaged_spn:hover,
+.minor_spn:hover,
+.major_spn:hover,
 .destroyed_spn:hover {
 	opacity: 0.5;
 	filter: alpha(opacity=50);
 	/* For IE8 and earlier */
+}
+
+div.modal-xl {
+	width: 90%;
+	height: 90%;
+}
+
+div.modal-xl div.modal-content {
+	height: 100%;
+}
+
+div.modal-xl div.modal-header {
+	height: 10%;
+}
+
+div.modal-xl div.modal-body {
+	height: 80%;
+}
+
+div.modal-xl div.modal-footer {
+	height: 10%;
+}
+
+div.modal-body > object {
+	width: 100%;
+	height: 100%;
 }
