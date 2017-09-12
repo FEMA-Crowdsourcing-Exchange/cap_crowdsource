@@ -5,35 +5,17 @@ import string
 import time
 import capReview
 import cherrypy
-from wdb.ext import WdbMiddleware
 
 DB_STRING = "my.db"
 WD = os.getcwd()
 
 class serviceAPI(object):
-    # _cp_config indicates that all the subsequent objects
-    # are going to be pre/post processed as json documents
-    # serializing and deserializing: JSON -> dict -> JSON
-    # unless is "overwritten", which some do with the
-    # cherrypy.config decorator.
-    #_cp_config  = {'tools.json_out.on': True,
-    #               'tools.json_in.on': True}
-
-    def __init__(self):
-        # The properties attribute correspond to the urls in the form:
-        # /gists/ID/PROP, mapping: PROP -> METHOD -> FUNC
-        #self.properties = {'Image': {'GET': self.Image},
-        #                   'nextImage': {'GET': self.Image},
-        #                   'save': {'POST': self.saveAssessment},
-        #                   'saveAssessment': {'POST': self.saveAssessment}}
-        pass
-
     @cherrypy.expose
-    def index(self):
-        return open('review.html')
-    
-    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
     def Image(self):
+        cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
+        #return "rr"
         return CAP.nextImage()
 
     @cherrypy.expose
@@ -52,11 +34,11 @@ if __name__ == '__main__':
              'tools.sessions.on': True,
              'tools.staticdir.root': os.path.abspath(os.getcwd())
          },
-         '/api': {
-             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
-             'tools.response_headers.on': True,
-             'tools.response_headers.headers': [('Content-Type', 'text/plain')],
-         },
+         #'/api': {
+             #'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
+             #'tools.response_headers.on': True,
+             #'tools.response_headers.headers': [('Content-Type', 'text/plain')],
+         #},
         '/public': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': WD + '/public'
@@ -85,7 +67,6 @@ if __name__ == '__main__':
     CAP = capReview.imgDB('Devel')
 
     webapp = API()
-    #webapp.wsgiapp.pipeline.append(('debugger', WdbMiddleware))
     webapp.api = serviceAPI()
 
     cherrypy.quickstart(webapp, '/', conf)

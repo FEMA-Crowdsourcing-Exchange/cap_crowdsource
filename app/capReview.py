@@ -14,26 +14,42 @@ class imgDB():
     tgtReviews = 3
 
     def __init__(self, dbCls):
-        if dbCls == "Prod":
+        self.dbCls = dbCls
+
+    def getConn(self):
+        if self.dbCls == "Prod":
             import pymssql
             dbHost = "<db host>"
             dbPort = 1433
             dbUser = "<db user>"
             dbPass = "<db pass>"
             dbName = "ImageEvents"
-            self.db = pymssql.connect(host=dbHost, port=dbPort, user=dbUser, password=dbPass , database=dbName)
+            db = pymssql.connect(host=dbHost, port=dbPort, user=dbUser, password=dbPass , database=dbName)
             self.dbName = "MS SQL"
         else:
             import sqlite3
-            self.db = sqlite3.connect("db/cap_assessment.sb")
+            db = sqlite3.connect("db/review.db")
             self.dbName = "SQLite3"
-        self.db.row_factory = dict_factory
-
+        db.row_factory = dict_factory
+        return db
+        
     def validateSave(self, data):
         return true
 
     def saveAssessment(self, data):
-        pass
+        db = self.getConn()
+        c = db.cursor()
+
+        c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, imagemissionId, imageEventName, imageTeamName, imageMissionName
+            FROM  review_queue
+            WHERE reviews < %d
+            ORDER BY lastReview
+            LIMIT 1;""" %(self.tgtReviews))
+        r = c.fetchone()
+        c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP WHERE id = '%s' """ %(r["id"]))
+        db.commit()
+        
+        return True
 
     def save(self, assessment):
         p = False
@@ -43,16 +59,18 @@ class imgDB():
 
     def nextImage(self):
         r = {}
-        with self.db.cursor() as c:
-            c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, missionId, imageEventName, imageTeamName, imageMissionName
-                FROM  review_queue
-                WHERE reviews < %d
-                ORDER BY last_review
-                LIMIT 1;""" %(self.tgtReviews))
-            r = c.fetchone()
-            c.execute("""UPDATE review_queue SET lastReview = strftime('%s','now') WHERE id = '%s' """ %(r["id"]))
-            self.db.commit()
-        pass
+        db = self.getConn()
+        c = db.cursor()
+
+        c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, imagemissionId, imageEventName, imageTeamName, imageMissionName
+            FROM  review_queue
+            WHERE reviews < %d
+            ORDER BY lastReview
+            LIMIT 1;""" %(self.tgtReviews))
+        r = c.fetchone()
+        c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP WHERE id = '%s' """ %(r["id"]))
+        db.commit()
+        return r
 
     def retrieve(self, imageId):
         pass

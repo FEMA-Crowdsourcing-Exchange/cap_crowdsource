@@ -239,7 +239,7 @@ function next_image() {
      apply_image_info(sample_image_json);
    } else {
    $.ajax({
-  url: "/nextImage",
+  url: "/api/Image",
   processData: false
 }).success(apply_image_info);
   }
