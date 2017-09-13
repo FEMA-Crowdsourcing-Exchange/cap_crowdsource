@@ -6,6 +6,7 @@ import time
 import capReview
 import cherrypy
 import cherrypy_cors
+import simplejson as json
 
 DB_STRING = "my.db"
 WD = os.getcwd()
@@ -34,9 +35,23 @@ class serviceAPI(object):
         #return "rr"
         return CAP.nextImage()
 
+    # allow:
+    #  application/x-www-form-urlencoded;
     @cherrypy.expose
-    def Save(self):
-        return CAP.saveAssessment(object)
+    @cherrypy.config(**{'tools.cors.on': True})
+    @cherrypy.tools.json_out()
+    #@cherrypy.tools.json_in()
+    #@request.cookie["session_id"]["id"]cherrypy.config(**{'tools.json_in.force': True})
+    def Save(self, **kwargs):
+        cl = cherrypy.request.headers['Content-Length']
+        rawbody = cherrypy.request.body.read(int(cl))
+        data = json.loads(rawbody)
+
+        data["session"] = str(cherrypy.session.id)
+        data["ipAddr"] = cherrypy.request.remote.ip
+
+        print(data)
+        return CAP.saveAssessment(data)
 
 class API(object):
     @cherrypy.expose

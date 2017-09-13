@@ -40,13 +40,9 @@ class imgDB():
         db = self.getConn()
         c = db.cursor()
 
-        c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, imagemissionId, imageEventName, imageTeamName, imageMissionName
-            FROM  review_queue
-            WHERE reviews < %d
-            ORDER BY lastReview
-            LIMIT 1;""" %(self.tgtReviews))
-        r = c.fetchone()
-        c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP WHERE id = '%s' """ %(r["id"]))
+        c.execute("""INSERT INTO assessment (id, data, sessionId, ip_address)
+            SELECT '%s', '%s', '%s', '%s';""" %(data["imageId"], json.dumps(data["geo"]), data["session"], data["ipAddr"]))
+        c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP , reviews = reviews + 1 WHERE id = '%s' """ %(data["imageId"]))
         db.commit()
         
         return True

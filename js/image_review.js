@@ -277,18 +277,18 @@ function save_status(data) {
 
 function save_next_image() {
 	var geoJSON = featuresToGeoJSON(assessment_features._layers);
-    geoJSON.imageID = imageID;
-	console.log("geoJSON", geoJSON);
+	var post_data = { geo: geoJSON,
+		imageId: imageID };
+	console.log("geoJSON", post_data);
 
 	$.ajax({
         type: "POST",
         url: "http://0.0.0.0:8889/api/Save",
-        data: geoJSON,
-        success: save_status,
+        data: JSON.stringify(post_data),
         failure: save_status,
         dataType: 'json',
         crossDomain: true
-        });
+        }).success(save_status);
 	//next_image();
 }
 
