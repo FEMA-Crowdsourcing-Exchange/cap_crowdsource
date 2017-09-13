@@ -61,19 +61,27 @@ if __name__ == '__main__':
         },    
         '/js': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': WD + '/public/js'
+            'tools.staticdir.dir': WD + '/../js'
         },
         '/css': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': WD + '/public/css'
+            'tools.staticdir.dir': WD + '/../css'
         },
         '/img': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': WD + '/public/images'
+            'tools.staticdir.dir': WD + '/../img'
+        },
+        '/templates': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': WD + '/../templates'
+        },
+        '/data': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': WD + '/../data'
         },
         '/favicon.ico': {
                 'tools.staticfile.on': True,
-                'tools.staticfile.filename': os.path.join(os.getcwd(), './public/images/fema.ico')
+                'tools.staticfile.filename': WD + '/../img/fema.ico'
         }
     }
 

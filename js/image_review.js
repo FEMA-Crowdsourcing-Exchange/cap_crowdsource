@@ -79,11 +79,11 @@ function apply_image_info(data) {
 		jsonData = data;
 	}
 
-	set_info("#eventname", jsonData["EventName"]);
-	set_info("#missionname", jsonData["MissionName"]);
-	set_info("#teamname", jsonData["TeamName"]);
-	set_info("#photo_date", convert_mssql_date(jsonData["EXIFPhotoDate"]));
-	set_info("#photo_altitude", jsonData["Altitude"]);
+	set_info("#eventname", jsonData["imageeventname"]);
+	set_info("#missionname", jsonData["imagemissionname"]);
+	set_info("#teamname", jsonData["imageteamname"]);
+	set_info("#photo_date", convert_mssql_date(jsonData["exifphotodate"]));
+	set_info("#photo_altitude", jsonData["altitude"]);
 
 	set_review_image(jsonData);
 }
@@ -162,8 +162,12 @@ function convert_mssql_date(data) {
 	} else {
 		dt_str = data.slice(6, 19);
 	}
-	var date = new Date(parseInt(dt_str));
-	return date.toISOString().slice(0, 19);
+
+	if ( dt_str > '' ) {
+        var date = new Date(parseInt(dt_str));
+        dt_str = date.toISOString().slice(0, 19);
+    }
+	return dt_str;
 }
 
 function createIcons() {
@@ -300,14 +304,14 @@ function set_markertool(severity) {
 
 function set_overview_image(image) {
 	overview_features.clearLayers();
-	var marker = L.marker([parseFloat(image["Latitude"]), parseFloat(image["Longitude"])], {
+	var marker = L.marker([parseFloat(image["latitude"]), parseFloat(image["longitude"])], {
 		icon: Icons['camera']
 	})
 	overview_features.addLayer(marker);
 	
 	overview_map.setView(
-		[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
-		calcZoom(image["Altitude"])
+		[parseFloat(image["latitude"]), parseFloat(image["longitude"])],
+		calcZoom(image["altitude"])
 	);
 }
 
@@ -315,15 +319,15 @@ function set_review_image(image) {
 	assessment_features.clearLayers();
 	if (imageLyr) imageLyr.remove();
 	map.setView(IMG_CENTER, IMG_ZOOM);
-	var imageThumbnailLyr = L.imageOverlay(image["ThumbnailURL"], bounds).addTo(map);
+	var imageThumbnailLyr = L.imageOverlay(image["thumbnailurl"], bounds).addTo(map);
 	imageThumbnailLyr.on("load", function () {
-		imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
+		imageLyr = L.imageOverlay(image["imageurl"], bounds).addTo(map);
 		imageLyr.on("load", function () {
 			imageThumbnailLyr.remove();
 		});
 	});
 	// imageThumbnailLyr.on("error", function () {
-	// 	imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
+	// 	imageLyr = L.imageOverlay(image["imageurl"], bounds).addTo(map);
 	// 	imageLyr.on("load", function () {
 	// 		imageThumbnailLyr.remove();
 	// 	});
