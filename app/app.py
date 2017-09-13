@@ -67,6 +67,10 @@ if __name__ == '__main__':
             'tools.staticdir.on': True,
             'tools.staticdir.dir': WD + '/public/css'
         },
+        '/img': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': WD + '/public/images'
+        },
         '/favicon.ico': {
                 'tools.staticfile.on': True,
                 'tools.staticfile.filename': os.path.join(os.getcwd(), './public/images/fema.ico')

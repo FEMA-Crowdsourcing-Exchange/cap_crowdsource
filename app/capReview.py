@@ -62,7 +62,9 @@ class imgDB():
         db = self.getConn()
         c = db.cursor()
 
-        c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, imagemissionId, imageEventName, imageTeamName, imageMissionName
+        c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, Latitude, Longitude, 
+                EXIFPhotoDate, EXIFCameraMaker, EXIFCameraModel, EXIFFocalLength,
+                imagemissionId, imageEventName, imageTeamName, imageMissionName
             FROM  review_queue
             WHERE reviews < %d
             ORDER BY lastReview

@@ -7,6 +7,10 @@ CREATE TABLE review_queue (
     altitude    NUMERIC,
     latitude    NUMERIC,
     longitude   NUMERIC,
+    exifphotodate   TEXT,
+    exifcameramaker  TEXT,
+    exifcameramodel  TEXT,
+    exiffocallength  TEXT,
     imageMissionId   INTEGER,
     imageEventName  TEXT,
     imageTeamName TEXT,
@@ -55,14 +59,20 @@ CREATE TABLE mission_review_status (
 
 ATTACH DATABASE 'mirror.db' as mirror;
 
-INSERT INTO review_queue (id, uploaddate, altitude, latitude, longitude, imageMissionId, imageEventName, imageTeamName, imageMissionName, imageurl, thumbnailurl, shapeWKT, status)
+INSERT INTO review_queue (id, uploaddate, altitude, latitude, longitude, 
+      exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, imageMissionId, imageEventName, imageTeamName, imageMissionName,
+      imageurl, thumbnailurl, shapeWKT, status)
    SELECT
-        id, uploaddate, altitude, latitude, longitude, imageMissionId, imageEventName, imageTeamName, imageMissionName, imageurl, thumbnailurl, shape_wkt, 'i'
+        id, uploaddate, altitude, latitude, longitude,
+        exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, 
+        imageMissionId, imageEventName, imageTeamName, imageMissionName, imageurl, thumbnailurl, shape_wkt, 'i'
      FROM mirror.images
-     WHERE imagemissionId = 613586;
+     WHERE imagemissionId = 613586 and
+       latitude > 0;
      
 INSERT INTO mission_review_status (imageMissionId, imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
     SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, 'A', CURRENT_TIMESTAMP
         FROM  mirror.images
-        WHERE imageMissionId = 613586
+        WHERE imageMissionId = 613586 and
+           latitude > 0
         GROUP BY 1;
