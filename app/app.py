@@ -47,11 +47,14 @@ class serviceAPI(object):
         rawbody = cherrypy.request.body.read(int(cl))
         data = json.loads(rawbody)
 
-        data["session"] = str(cherrypy.session.id)
-        data["ipAddr"] = cherrypy.request.remote.ip
-
-        print(data)
-        return CAP.saveAssessment(data)
+        if not cherrypy.session.id == None:
+            data["session"] = str(cherrypy.session.id)
+            data["ipAddr"] = cherrypy.request.remote.ip
+            
+            print(data)
+            return CAP.saveAssessment(data)
+        else
+            return False
 
 class API(object):
     @cherrypy.expose
