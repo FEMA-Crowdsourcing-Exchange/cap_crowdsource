@@ -250,9 +250,11 @@ function next_image() {
 		apply_image_info(sample_image_json);
 	} else {
 		$.ajax({
-			url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
+			//url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
+			url: "http://0.0.0.0:8889/api/Image",
 			processData: false,
-			crossDomain: true
+			crossDomain: true,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
 		}).success(apply_image_info);
 	}
 }
@@ -265,7 +267,16 @@ function previous_image() {
 function save_next_image() {
 	var geoJSON = featuresToGeoJSON(assessment_features._layers);
 	console.log("geoJSON", geoJSON);
-	next_image();
+
+	$.ajax({
+        type: "POST",
+        url: "http://0.0.0.0:8889/api/Save",
+        data: geoJSON,
+        success: next_image,
+        dataType: 'json',
+        crossDomain: true
+        });
+	//next_image();
 }
 
 function set_general(severity) {
