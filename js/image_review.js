@@ -1,13 +1,15 @@
 // image_review.js
 /*********** 
 * TODO: 
-* - Change "Remove Marks" radio to button
-* - Create "buildPayload" function for 'save'
-* - Change "Save" button in Leaflet Edit toolbar to "Save Edits"
-* - Change "Save - Next Image" button to "Submit"
-* - Create payload archive
-* - Use payload archive to enable 'Previous Image' functionality
-* - Create tooltip for each btn_DamageMarker
+- Create "buildPayload" function for 'save' (Will need Session ID, timestamp, and Token)
+- Use payload archive to enable 'Previous Image' functionality
+- Create tooltip for each btn_DamageMarker
+- Cancel imageOverlay load upon "previous", "next", or "submit"
+- Set overview zoom based on altitude
+- Read in variables from js file for urls
+- Enable users marking overview map to georectify image to map; 2x locations each
+- Allow users to submit comments with their assessment (question: comment per marker or per image?)
+- Skip images without lat/lng
 ***********/
 // GLOBALS
 var $ = window.$;
@@ -64,7 +66,7 @@ function activate() {
 			options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
 		}
 	});
-	$("input[name=btn_DamageMarker]:checked").each(function(element) {
+	$("input[name=btn_DamageMarker]:checked").each(function (element) {
 		element.prop("checked", false);
 	}, this);
 }
@@ -291,10 +293,10 @@ function set_overview_image(image) {
 		icon: Icons['camera']
 	})
 	overview_features.addLayer(marker);
-
+	
 	overview_map.setView(
 		[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
-		OVR_ZOOM
+		calcZoom(image["Altitude"])
 	);
 }
 
@@ -309,5 +311,25 @@ function set_review_image(image) {
 			imageThumbnailLyr.remove();
 		});
 	});
+	// imageThumbnailLyr.on("error", function () {
+	// 	imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
+	// 	imageLyr.on("load", function () {
+	// 		imageThumbnailLyr.remove();
+	// 	});
+	// 	imageLyr.on("error", function () {
+	// 		imageLyr.remove();
+	// 		next_image();
+	// 	});
+
+	// });
 	set_overview_image(image);
+}
+
+function calcZoom(altitude) {
+	var index = decToBase2Exponent(altitude * 10);
+	return OVR_ZOOM + (OVR_ZOOM - index);	
+}
+
+function decToBase2Exponent(d) {
+	return parseInt(d).toString(2).length - 1;
 }

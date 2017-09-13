@@ -202,3 +202,12 @@ div.modal-body>object {
 div#redirectModalText a {
 	color: white;
 }
+
+
+/***************
+* Leaflet Styles:
+****************/
+
+div.leaflet-draw.leaflet-control>div.leaflet-draw-section>ul.leaflet-draw-actions.leaflet-draw-actions-top>li>a[title="Save changes"]:after{
+	content: " Edits";
+}
