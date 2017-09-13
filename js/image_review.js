@@ -24,6 +24,7 @@ var IMG_CENTER;
 var IMG_HISTORY_LEN = 5;
 var Icons = createIcons();
 var eventId;
+var imageID;
 var image_history = [];
 var current_image = {};
 var sample_image_json =
@@ -79,6 +80,7 @@ function apply_image_info(data) {
 		jsonData = data;
 	}
 
+    imageID = jsonData["id"];
 	set_info("#eventname", jsonData["imageeventname"]);
 	set_info("#missionname", jsonData["imagemissionname"]);
 	set_info("#teamname", jsonData["imageteamname"]);
@@ -268,15 +270,22 @@ function previous_image() {
 	return;
 }
 
+function save_status(data) {
+    console.log(data);   
+    next_image();
+}
+
 function save_next_image() {
 	var geoJSON = featuresToGeoJSON(assessment_features._layers);
+    geoJSON.imageID = imageID;
 	console.log("geoJSON", geoJSON);
 
 	$.ajax({
         type: "POST",
         url: "http://0.0.0.0:8889/api/Save",
         data: geoJSON,
-        success: next_image,
+        success: save_status,
+        failure: save_status,
         dataType: 'json',
         crossDomain: true
         });
