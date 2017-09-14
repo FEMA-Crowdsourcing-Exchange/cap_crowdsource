@@ -1,10 +1,7 @@
 // image_review.js
 /*********** 
 * TODO: 
-- Load all image data into history first, then use current image as pointer
-- Tie editing/submitting functionality to image_submitted variable
 - Create "buildPayload" function for 'save' (Will need Session ID, timestamp, and Token)
-- Change "submit" and "skip next" navigation buttons to "New Image" and "" when viewing previous images
 - Create tooltip for each btn_DamageMarker
 - Read in variables from js file for urls
 - Enable users marking overview map to georectify image to map; 2x locations each
@@ -25,22 +22,23 @@ var IMG_ZOOM_MAX = 14;
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
 var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / 4, IMG_DEFAULT_SIZE[2] / 4];
 var IMG_CENTER;
-var IMG_HISTORY_LEN = 5;
+var IMG_RETRY_MAX_ATTEMPTS = 0; //8;
 var Icons = create_icons();
 var eventId;
 var image_history = [];
 var image_index = 0; // tracks whether user is viewing an image from history or working on new images
-var image_submitted = false;
 var current_image = {};
 var sample_image_json =
 	'{"Altitude":342.00,"AverageVoteLevel":null,"CalculatedHeading":-1.00,"DatePointTimeOffset":0,"EXIFFocalLength":200.00,"EXIFPhotoDate":"/Date(1504194601000+0000)/","EventId":9073,"EventName":"CAP - Hurricane Harvey","Filename":"DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Heading":-1.00,"Id":"e84a2184-76e4-4e64-8340-95439efea971","ImageArchived":false,"ImageEventImagesId":null,"ImageMissionId":613531,"ImageTypeId":1,"ImageURL":"https://fema-cap-imagery.s3.amazonaws.com/Images/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Latitude":27.674026,"Longitude":-97.538701,"MaxVoteLevel":null,"MinVoteLevel":null,"MissionName":"S0831A","NMEAPoint_Id":0,"NumberOfVotes":0,"OffsetHeading":0.00,"OffsetSeconds":null,"PhotoUSNG":"14R PR 4461","Shape":{"Geography":{"CoordinateSystemId":4326,"WellKnownText":"POINT (-97.5387016666667 27.6740266666667)"}},"TargetUSNG":null,"TeamName":"HARVEY CSR","ThumbnailURL":"https://fema-cap-imagery.s3.amazonaws.com/Thumbs/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","VirtualID":"bd24b7ca-36cc-49c1-afb5-00045e3665fa"}';
 var map;
+var drawControl;
 var bounds;
 var overview_map;
 var overview_features;
-var assessment_features;
-var imageLyr;
-var imageThumbnailLyr;
+var assessment_features; // Pointer
+var imageLyr; // Pointer
+var imageThumbnailLyr; // Pointer
+var imageRetryAttempt = 0;
 var damage_markers = { // Marker = Severity: 'hex color'
 	"affected": '#ffffcc',
 	"minor": '#ffc000',
@@ -49,7 +47,6 @@ var damage_markers = { // Marker = Severity: 'hex color'
 };
 var set_drawing_options; // exposing function globally
 var xhr;
-
 
 activate();
 
@@ -80,29 +77,30 @@ function activate() {
 	}, this);
 }
 
-function add_image_to_history(image, submit) {
-	console.log("add_image_to_history - imageLyr", imageLyr);
-	image_history.push({
+function add_image_to_history(image) { // Call after imageLyr and assessment_features layers are created
+	// console.log("add_image_to_history - imageLyr", imageLyr);
+	var imageObj = {
 		assessment: {
-			geoJSON: features_to_geoJSON(assessment_features._layers)
+			geoJSON: ""
 		},
 		// overview: {
 
 		// },
 		image: image,
 		// imageLyr: $.extend({}, imageLyr),
-		imageLyr: imageLyr,
+		// imageLyr: imageLyr,
 		// assessment_features: assessment_features,
+		imageLyr: "",
+		assessment_features: "",
 		// overview_features: overview_features,
-		cookie: document.cookie,
-		sessionID: "",
-		submitted: submit,
-		timestamp: Date()
-	});
-	if (submit) {
-		// use payload and send
-	}
+		cookie: "", // set when submitted
+		sessionID: "", // set when submitted
+		submitted: false,
+		timestamp: "" // set when submitted
+	};
+	image_history.push(imageObj);
 	console.log("image_history", image_history);
+	return imageObj;
 }
 
 function apply_image_info_wrapper(data) {
@@ -119,22 +117,19 @@ function apply_image_info_wrapper(data) {
 	set_info("#photo_date", convert_mssql_date(current_image["EXIFPhotoDate"]));
 	set_info("#photo_altitude", current_image["Altitude"]);
 
-	// set_review_image(current_image);
 	return current_image;
 }
 
-function apply_image_info(data) {
-	set_review_image(apply_image_info_wrapper(data));
+function apply_image_info(imageObj) {
+	imageObj.image = apply_image_info_wrapper(imageObj.image);
+	set_review_image(imageObj);
 }
 
-function build_leaflet_draw_toolbar(map) {
-	assessment_features = new L.FeatureGroup();
-	map.addLayer(assessment_features);
-
-	var drawControl = new L.Control.Draw({
+function build_leaflet_draw_toolbar(map, editFeatureGroup) {
+	drawControl = new L.Control.Draw({
 		position: 'topleft',
 		edit: {
-			featureGroup: assessment_features
+			featureGroup: editFeatureGroup
 		},
 		draw: {
 			polygon: false,
@@ -148,11 +143,18 @@ function build_leaflet_draw_toolbar(map) {
 		}
 	});
 	map.addControl(drawControl);
+	console.log("drawControl", drawControl);
 
 	map.on(L.Draw.Event.DRAWSTART, function () {
-		if ($("input[name=btn_DamageMarker][value=eraser]:checked").length === 1 || $("input[name=btn_DamageMarker]:checked").length === 0) {
-			$("input[name=btn_DamageMarker][value=BLDG_A]").prop("checked", "checked");
+		var damageMarker = $("input[name=btn_DamageMarker]:checked");
+		if (damageMarker.length === 0) {
+			$("input[name=btn_DamageMarker][value=affected]").prop("checked", "checked");
 			set_drawing_options('affected');
+		} else {
+			console.log("damageMarker", damageMarker);
+			console.log("value", damageMarker[0].value);
+			set_drawing_options(damageMarker[0].value);
+			//			set_drawing_options('affected');			
 		}
 	});
 
@@ -269,7 +271,19 @@ function features_to_geoJSON(featureCollection) {
 
 function image_history_next() {
 	console.log("image_history_next");
-	return;
+	if (image_index >= image_history.length) {
+		console.warn("function image_history_next() -> image_index = " + image_index + " and should not be >= image_history.length, which is " + image_history.length);
+		image_index = image_history.length - 1;
+		return;
+	}
+
+	if (++image_index === image_history.length) return;
+
+	if (image_index < image_history.length) {
+		var imageObj = image_history[image_index];
+		apply_image_info_wrapper(imageObj.image); // sets current_image
+		set_review_image(imageObj, true);
+	}
 }
 
 function init_map() {
@@ -320,7 +334,7 @@ function init_review_map() {
 	// tell leaflet that the map is exactly as big as the image
 	map.setMaxBounds(bounds);
 
-	build_leaflet_draw_toolbar(map);
+	// build_leaflet_draw_toolbar(map);
 }
 
 function next_image() {
@@ -340,15 +354,8 @@ function next_image() {
 
 function next_image_wrapper(data) {
 	image_index = image_history.length;
-	// $("button#previous_image.disabled")[0].toggleClass("disabled").prop("disabled", false);
 	if (image_history.length) enabled_button("previous_image");
-	apply_image_info(data);
-}
-
-function update_nav() {
-	if (image_index === image_history.length) {} // show submit and skip; hide new and next
-	if (image_index + 1 === image_history.length) {} // show submit and skip; hide new and next
-
+	apply_image_info(add_image_to_history(data));
 }
 
 function previous_image() {
@@ -359,32 +366,16 @@ function previous_image() {
 		return;
 	}
 	if (--image_index < 0) return;
-	if (image_index === 0) {
-		// $("button#previous_image")[0].toggleClass("disabled").prop("disabled", true);
-		disabled_button("previous_image");
-	} else {
-		// $("button#previous_image.disabled")[0].toggleClass("disabled").prop("disabled", false);
-		enabled_button("previous_image");
-	}
 	if (image_index < image_history.length) {
-		// do something with the current contents of map if image is last from server and not saved/submitted
-		// if (image_index + 1 === image_history.length) add_image_to_history(current_image, false);		
-		var image = image_history[image_index];
-		apply_image_info_wrapper(image.image); // sets current_image
-		imageLyr.remove();
-		imageLyr = image.imageLyr;
-		imageLyr.addTo(map);
-		assessment_features.clearLayers();
-		assessment_features = L.geoJSON(image.assessment.geoJSON);
-		assessment_features.addTo(map);
-		// map.addLayer(assessment_features);	
-		set_overview_image(image.image);
+		var imageObj = image_history[image_index];
+		apply_image_info_wrapper(imageObj.image); // sets current_image
+		set_review_image(imageObj, true);
 	}
 }
 
 function save_next_image() {
 	// console.log("payload", buildPayload());
-	add_image_to_history(current_image, true);
+	image_history[image_index].submitted = true;
 	next_image();
 }
 
@@ -420,33 +411,72 @@ function set_overview_image(image) {
 	);
 }
 
-function set_review_image(image) {
-	assessment_features.clearLayers();
+function set_review_image(imageObj, isHistory) {
+	if (assessment_features) assessment_features.remove();
 	if (imageThumbnailLyr) imageThumbnailLyr.remove();
 	if (imageLyr) imageLyr.remove();
 	map.setView(IMG_CENTER, IMG_ZOOM);
-	imageThumbnailLyr = L.imageOverlay(image["ThumbnailURL"], bounds).addTo(map);
+	imageThumbnailLyr = L.imageOverlay(imageObj.image["ThumbnailURL"], bounds).addTo(map);
+	if (!isHistory) {
+		imageObj.assessment_features = new L.FeatureGroup();
+	}
+	assessment_features = imageObj.assessment_features;
+	map.addLayer(assessment_features);
+	if (drawControl) map.removeControl(drawControl);
+	if (!imageObj.submitted) build_leaflet_draw_toolbar(map, assessment_features);
+	update_nav(imageObj, isHistory)
 	imageThumbnailLyr.on("load", function () {
-		imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
+		set_overview_image(imageObj.image);
+		imageLyr = L.imageOverlay(imageObj.image["ImageURL"], bounds).addTo(map);
+		imageObj.imageLyr = imageLyr;
 		imageLyr.on("load", function () {
 			imageThumbnailLyr.remove();
 		});
 	});
-	// imageThumbnailLyr.on("error", function () {
-	// 	imageLyr = L.imageOverlay(image["ImageURL"], bounds).addTo(map);
-	// 	imageLyr.on("load", function () {
-	// 		imageThumbnailLyr.remove();
-	// 	});
-	// 	imageLyr.on("error", function () {
-	// 		imageLyr.remove();
-	// 		next_image();
-	// 	});
+	imageThumbnailLyr.on("error", function () {
+		imageLyr = L.imageOverlay(imageObj.image["ImageURL"], bounds).addTo(map);
+		imageObj.imageLyr = imageLyr;
+		imageLyr.on("load", function () {
+			set_overview_image(imageObj.image);
+			imageThumbnailLyr.remove();
+		});
+		imageLyr.on("error", function (e) { // neither the thumbnail nor HiRes loaded, so fetch next image and remove from history
+			image_history.pop();
+			if (imageRetryAttempt++ < IMG_RETRY_MAX_ATTEMPTS) {
+				next_image();
+			} else {
+				alert("Image Server is currently experiencing difficulties. Please try again later.\n" +
+					"If you continue to experience difficulties, please contact the site admin.\n\n"
+				);
+			}
+		});
+	});
+}
 
-	// });
-	set_overview_image(image);
+function set_btn_visability(id, show) {
+	var btn = $("button#" + id);
+	if (btn.length) {
+		if (show) {
+			btn.removeClass("hide disabled").prop("disabled", false);
+		} else {
+			btn.addClass("hide disabled").prop("disabled", true);
+		}
+	}
 }
 
 function skip_image() {
-	add_image_to_history(current_image, false);
 	next_image();
+}
+
+function update_nav(imageObj, isHistory) {
+	image_index <= 0 ? disabled_button("previous_image") : enabled_button("previous_image");
+	imageObj.submitted ? disabled_button("save_image") : enabled_button("save_image");
+
+	var buttons = [
+		["image_history_next", isHistory && image_index < image_history.length - 1],
+		["new_image", isHistory]
+	];
+	buttons.forEach(function (btn) {
+		set_btn_visability(btn[0], btn[1]);
+	}, this);
 }
