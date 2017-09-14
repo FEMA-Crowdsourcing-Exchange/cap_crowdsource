@@ -10,9 +10,7 @@ FEMA CAP Crowdsource Damage Assessment Tool
         * install python
         * install pip
 
-        * install cheerypy
-            * python -m pip install cherrypy --user
-        * install cherrypy_cors
-            * python -m pip install cherrypy_cors --user
+        * install cheerypy, cherrypy_cors
+            * python -m pip install -r dependencies.txt --user
 
 

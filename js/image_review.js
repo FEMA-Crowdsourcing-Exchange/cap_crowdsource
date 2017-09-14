@@ -12,8 +12,8 @@
 - Should users be able to later submit images using "previous" if skipped over?
 ***********/
 // GLOBALS
-var APP_URL = "";
-//  APP_URL = "http://0.0.0.0:8889/"
+// var APP_URL = "";
+var APP_URL = "http://localhost:8889/"
 var $ = window.$;
 var L = window.L;
 var OVR_ZOOM = 14;
@@ -32,7 +32,7 @@ var image_history = [];
 var image_index = 0; // tracks whether user is viewing an image from history or working on new images
 var current_image = {};
 var sample_image_json =
-	'{"Altitude":342.00,"AverageVoteLevel":null,"CalculatedHeading":-1.00,"DatePointTimeOffset":0,"EXIFFocalLength":200.00,"EXIFPhotoDate":"/Date(1504194601000+0000)/","EventId":9073,"EventName":"CAP - Hurricane Harvey","Filename":"DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Heading":-1.00,"Id":"e84a2184-76e4-4e64-8340-95439efea971","ImageArchived":false,"ImageEventImagesId":null,"ImageMissionId":613531,"ImageTypeId":1,"ImageURL":"https://fema-cap-imagery.s3.amazonaws.com/Images/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Latitude":27.674026,"Longitude":-97.538701,"MaxVoteLevel":null,"MinVoteLevel":null,"MissionName":"S0831A","NMEAPoint_Id":0,"NumberOfVotes":0,"OffsetHeading":0.00,"OffsetSeconds":null,"PhotoUSNG":"14R PR 4461","Shape":{"Geography":{"CoordinateSystemId":4326,"WellKnownText":"POINT (-97.5387016666667 27.6740266666667)"}},"TargetUSNG":null,"TeamName":"HARVEY CSR","ThumbnailURL":"https://fema-cap-imagery.s3.amazonaws.com/Thumbs/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","VirtualID":"bd24b7ca-36cc-49c1-afb5-00045e3665fa"}';
+	'{"Altitude":342.00,"AverageVoteLevel":null,"CalculatedHeading":-1.00,"DatePointTimeOffset":0,"EXIFFocalLength":200.00,"EXIFPhotoDate":"/Date(1504194601000+0000)/","EventId":9073,"EventName":"CAP - Hurricane Harvey","Filename":"DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Heading":-1.00,"Id":"e84a2184-76e4-4e64-8340-95439efea971","ImageArchived":false,"ImageEventImagesId":null,"ImageMissionId":613531,"ImageTypeId":1,"imageurl":"https://fema-cap-imagery.s3.amazonaws.com/Images/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","Latitude":27.674026,"Longitude":-97.538701,"MaxVoteLevel":null,"MinVoteLevel":null,"MissionName":"S0831A","NMEAPoint_Id":0,"NumberOfVotes":0,"OffsetHeading":0.00,"OffsetSeconds":null,"PhotoUSNG":"14R PR 4461","Shape":{"Geography":{"CoordinateSystemId":4326,"WellKnownText":"POINT (-97.5387016666667 27.6740266666667)"}},"TargetUSNG":null,"TeamName":"HARVEY CSR","thumbnailurl":"https://fema-cap-imagery.s3.amazonaws.com/Thumbs/9073/613531/DSC_0560_e84a2184-76e4-4e64-8340-95439efea971.jpg","VirtualID":"bd24b7ca-36cc-49c1-afb5-00045e3665fa"}';
 var map;
 var drawControl;
 var bounds;
@@ -106,26 +106,26 @@ function apply_image_info_wrapper(data) {
 	}
 	current_image = jsonData;
 
-    if (current_image && "id" in current_image) {
-        imageID = current_image["id"];
-        missionId = current_image["imageMissionid"];
-	    set_info("#eventname", current_image["imageeventname"]);
-	    set_info("#missionname", current_image["imagemissionname"]);
-	    set_info("#teamname", current_image["imageteamname"]);
-	    set_info("#photo_date", convert_mssql_date(current_image["exifphotodate"]));
-	    set_info("#photo_altitude", current_image["altitude"]);
+	if (current_image && "id" in current_image) {
+		imageID = current_image["id"];
+		missionId = current_image["imageMissionid"];
+		set_info("#eventname", current_image["imageeventname"]);
+		set_info("#missionname", current_image["imagemissionname"]);
+		set_info("#teamname", current_image["imageteamname"]);
+		set_info("#photo_date", convert_mssql_date(current_image["exifphotodate"]));
+		set_info("#photo_altitude", current_image["altitude"]);
 
-            // refactored in spike -- double check
-	    // set_review_image(jsonData);
-    } else {
-        alert("no more images to review");
-    }
-    
-    // set the general status to be unintialized
-    assessment_general_status = '';
-   	$("input[name=btn_GeneralMarker]").attr("checked", false);
+		// refactored in spike -- double check
+		// set_review_image(jsonData);
+	} else {
+		alert("no more images to review");
+	}
 
-    return current_image;
+	// set the general status to be unintialized
+	assessment_general_status = '';
+	$("input[name=btn_GeneralMarker]").attr("checked", false);
+
+	return current_image;
 }
 
 function apply_image_info(imageObj) {
@@ -191,44 +191,35 @@ function build_leaflet_draw_toolbar(map, editFeatureGroup) {
 }
 
 function buildPayload(imageObj) {
-    var geoJSON = features_to_geoJSON(imageObj.assessment_features._layers);
-    // force a default missionId
-    if ( !missionId ) {
-        missionId = -1
-    }
-    
-    // set general impacted if any buildings
-    if ( geoJSON.features.length > 0 ) {
-        assessment_general_status = 'impact';
-    }
+	var geoJSON = features_to_geoJSON(imageObj.assessment_features._layers);
+	// force a default missionId
+	if (!missionId) {
+		missionId = -1
+	}
 
-    var post_data = { geo: geoJSON,
-        generalStatus: assessment_general_status,
-        missionId: missionId,
-        imageId: imageID };
+	// set general impacted if any buildings
+	if (geoJSON.features.length > 0) {
+		assessment_general_status = 'impact';
+	}
+
+	var post_data = {
+		geo: geoJSON,
+		generalStatus: assessment_general_status,
+		missionId: missionId,
+		imageId: imageID
+	};
 
 	$.ajax({
-        type: "POST",
-        url: APP_URL + "api/Save",
-        data: JSON.stringify(post_data),
-        failure: save_status,
-        dataType: 'json',
-        contentType: 'application/json',
-        crossDomain: true
-        }).success(save_status);
-
-	imageObj.submitted = true;
-	return {
-		assessment: {
-			geoJSON: geoJSON
-		},
-		overview: {
-
-		},
-		cookie: document.cookie,
-		sessionID: "",
-		timestamp: Date()
-	}
+		type: "POST",
+		url: APP_URL + "api/Save",
+		data: JSON.stringify(post_data),
+		failure: save_status,
+		dataType: 'json',
+		contentType: 'application/json',
+		crossDomain: true
+	}).success(function(data) {
+		save_status(data, imageObj);
+	});
 }
 
 function calc_zoom(altitude) {
@@ -248,17 +239,17 @@ function check_protocol() {
 
 function convert_mssql_date(data) {
 	var dt_str;
-	if ( data && data.includes('Date(') ) {
+	if (data && data.includes('Date(')) {
 		dt_str = data.slice(6, 19);
-        var date = new Date(parseInt(dt_str));
-        dt_str = date.toISOString().slice(0, 19);
+		var date = new Date(parseInt(dt_str));
+		dt_str = date.toISOString().slice(0, 19);
 	} else if (data) {
-        // preformated dates pass through
-        dt_str = data
-    } else {
-        // pass "unknown"
-        dt_str = "<b>unknown</b>";
-    }
+		// preformated dates pass through
+		dt_str = data
+	} else {
+		// pass "unknown"
+		dt_str = "<b>unknown</b>";
+	}
 
 	return dt_str;
 }
@@ -344,7 +335,7 @@ function init_overview_map() {
 
 function init_review_map() {
 	// dimensions of the image
-        // https://imgs.xkcd.com/comics/online_communities.png
+	// https://imgs.xkcd.com/comics/online_communities.png
 	var url = 'https://s3.amazonaws.com/fema-cap-imagery/ref/Carte_detailee_de_west_point.jpg';
 
 	// Using leaflet.js to pan and zoom an image.
@@ -380,12 +371,18 @@ function next_image() {
 		if (xhr && xhr.readyState != 4) {
 			xhr.abort();
 		}
+		console.log("APP_URL", APP_URL);
 		xhr = $.ajax({
 			url: APP_URL + "api/Image",
 			processData: false,
 			crossDomain: true,
-                        headers: {'X-Requested-With': 'XMLHttpRequest'}
-		}).success(next_image_wrapper);
+			headers: {
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		}).success(function(data) {
+			console.log("data", data);
+			next_image_wrapper(data);
+		});
 	}
 }
 
@@ -409,19 +406,21 @@ function previous_image() {
 	}
 }
 
-function save_status(data) {
-    console.log(data);   
-    next_image();
-}
-
-function save_next_image() {
-	console.log("Submitted", buildPayload(image_history[image_index]));
+function save_status(data, imageObj) {
+	console.log(data);
+	if(data.status === "succeeded") imageObj.submitted = true;	
 	next_image();
 }
 
+function save_next_image() {
+	console.log("Submitted");
+	buildPayload(image_history[image_index]);
+	// next_image(); // executed in buildPayload
+}
+
 function set_general(severity) {
-    assessment_general_status = severity;
-    return;
+	assessment_general_status = severity;
+	return;
 }
 
 function set_info(slctr, newText) {
@@ -457,7 +456,7 @@ function set_review_image(imageObj, isHistory) {
 	if (imageThumbnailLyr) imageThumbnailLyr.remove();
 	if (imageLyr) imageLyr.remove();
 	map.setView(IMG_CENTER, IMG_ZOOM);
-	imageThumbnailLyr = L.imageOverlay(imageObj.image["ThumbnailURL"], bounds).addTo(map);
+	imageThumbnailLyr = L.imageOverlay(imageObj.image["thumbnailurl"], bounds).addTo(map);
 	if (!isHistory) {
 		imageObj.assessment_features = new L.FeatureGroup();
 	}
@@ -468,20 +467,20 @@ function set_review_image(imageObj, isHistory) {
 	update_nav(imageObj, isHistory)
 	imageThumbnailLyr.on("load", function () {
 		set_overview_image(imageObj.image);
-		imageLyr = L.imageOverlay(imageObj.image["ImageURL"], bounds).addTo(map);
+		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageObj.imageLyr = imageLyr;
 		imageLyr.on("load", function () {
 			imageThumbnailLyr.remove();
 		});
 	});
 	imageThumbnailLyr.on("error", function () {
-		imageLyr = L.imageOverlay(imageObj.image["ImageURL"], bounds).addTo(map);
+		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageObj.imageLyr = imageLyr;
 		imageLyr.on("load", function () {
 			set_overview_image(imageObj.image);
 			imageThumbnailLyr.remove();
 		});
-		imageLyr.on("error", function (e) { // neither the thumbnail nor HiRes loaded, so fetch next image and remove from history
+		imageLyr.on("error", function () { // neither the thumbnail nor HiRes loaded, so fetch next image and remove from history
 			image_history.pop();
 			if (imageRetryAttempt++ < IMG_RETRY_MAX_ATTEMPTS) {
 				next_image();
@@ -494,7 +493,7 @@ function set_review_image(imageObj, isHistory) {
 	});
 }
 
-	// });
+// });
 // merge lint
 //	set_overview_image(image);
 //}
