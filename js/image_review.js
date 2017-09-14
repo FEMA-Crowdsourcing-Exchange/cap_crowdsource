@@ -12,6 +12,8 @@
 - Should users be able to later submit images using "previous" if skipped over?
 ***********/
 // GLOBALS
+var APP_URL = "";
+//  APP_URL = "http://0.0.0.0:8889/"
 var $ = window.$;
 var L = window.L;
 var OVR_ZOOM = 14;
@@ -24,6 +26,8 @@ var IMG_CENTER;
 var IMG_RETRY_MAX_ATTEMPTS = 8;
 var Icons = create_icons();
 var eventId;
+var imageID;
+var missionId;
 var image_history = [];
 var image_index = 0; // tracks whether user is viewing an image from history or working on new images
 var current_image = {};
@@ -35,6 +39,7 @@ var bounds;
 var overview_map;
 var overview_features;
 var assessment_features; // Pointer
+var assessment_general_status = ''; // overall Image depiction
 var imageLyr; // Pointer
 var imageThumbnailLyr; // Pointer
 var imageRetryAttempt = 0;
@@ -100,13 +105,27 @@ function apply_image_info_wrapper(data) {
 		jsonData = data;
 	}
 	current_image = jsonData;
-	set_info("#eventname", current_image["EventName"]);
-	set_info("#missionname", current_image["MissionName"]);
-	set_info("#teamname", current_image["TeamName"]);
-	set_info("#photo_date", convert_mssql_date(current_image["EXIFPhotoDate"]));
-	set_info("#photo_altitude", current_image["Altitude"]);
 
-	return current_image;
+    if (current_image && "id" in current_image) {
+        imageID = current_image["id"];
+        missionId = current_image["imageMissionid"];
+	    set_info("#eventname", current_image["imageeventname"]);
+	    set_info("#missionname", current_image["imagemissionname"]);
+	    set_info("#teamname", current_image["imageteamname"]);
+	    set_info("#photo_date", convert_mssql_date(current_image["exifphotodate"]));
+	    set_info("#photo_altitude", current_image["altitude"]);
+
+            // refactored in spike -- double check
+	    // set_review_image(jsonData);
+    } else {
+        alert("no more images to review");
+    }
+    
+    // set the general status to be unintialized
+    assessment_general_status = '';
+   	$("input[name=btn_GeneralMarker]").attr("checked", false);
+
+    return current_image;
 }
 
 function apply_image_info(imageObj) {
@@ -172,10 +191,36 @@ function build_leaflet_draw_toolbar(map, editFeatureGroup) {
 }
 
 function buildPayload(imageObj) {
+    var geoJSON = features_to_geoJSON(imageObj.assessment_features._layers);
+    // force a default missionId
+    if ( !missionId ) {
+        missionId = -1
+    }
+    
+    // set general impacted if any buildings
+    if ( geoJSON.features.length > 0 ) {
+        assessment_general_status = 'impact';
+    }
+
+    var post_data = { geo: geoJSON,
+        generalStatus: assessment_general_status,
+        missionId: missionId,
+        imageId: imageID };
+
+	$.ajax({
+        type: "POST",
+        url: APP_URL + "api/Save",
+        data: JSON.stringify(post_data),
+        failure: save_status,
+        dataType: 'json',
+        contentType: 'application/json',
+        crossDomain: true
+        }).success(save_status);
+
 	imageObj.submitted = true;
 	return {
 		assessment: {
-			geoJSON: features_to_geoJSON(imageObj.assessment_features._layers)
+			geoJSON: geoJSON
 		},
 		overview: {
 
@@ -203,13 +248,19 @@ function check_protocol() {
 
 function convert_mssql_date(data) {
 	var dt_str;
-	if (!data) {
-		dt_str = "";
-	} else {
+	if ( data && data.includes('Date(') ) {
 		dt_str = data.slice(6, 19);
-	}
-	var date = new Date(parseInt(dt_str));
-	return date.toISOString().slice(0, 19);
+        var date = new Date(parseInt(dt_str));
+        dt_str = date.toISOString().slice(0, 19);
+	} else if (data) {
+        // preformated dates pass through
+        dt_str = data
+    } else {
+        // pass "unknown"
+        dt_str = "<b>unknown</b>";
+    }
+
+	return dt_str;
 }
 
 function create_icons() {
@@ -293,8 +344,8 @@ function init_overview_map() {
 
 function init_review_map() {
 	// dimensions of the image
-	// var url = 'https://imgs.xkcd.com/comics/online_communities.png';
-	var url = 'img/online_communities.png';
+        // https://imgs.xkcd.com/comics/online_communities.png
+	var url = 'https://s3.amazonaws.com/fema-cap-imagery/ref/Carte_detailee_de_west_point.jpg';
 
 	// Using leaflet.js to pan and zoom an image.
 	// create the map
@@ -330,9 +381,10 @@ function next_image() {
 			xhr.abort();
 		}
 		xhr = $.ajax({
-			url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
+			url: APP_URL + "api/Image",
 			processData: false,
-			crossDomain: true
+			crossDomain: true,
+                        headers: {'X-Requested-With': 'XMLHttpRequest'}
 		}).success(next_image_wrapper);
 	}
 }
@@ -357,13 +409,19 @@ function previous_image() {
 	}
 }
 
+function save_status(data) {
+    console.log(data);   
+    next_image();
+}
+
 function save_next_image() {
 	console.log("Submitted", buildPayload(image_history[image_index]));
 	next_image();
 }
 
 function set_general(severity) {
-	return;
+    assessment_general_status = severity;
+    return;
 }
 
 function set_info(slctr, newText) {
@@ -383,14 +441,14 @@ function set_markertool(severity) {
 
 function set_overview_image(image) {
 	overview_features.clearLayers();
-	var marker = L.marker([parseFloat(image["Latitude"]), parseFloat(image["Longitude"])], {
+	var marker = L.marker([parseFloat(image["latitude"]), parseFloat(image["longitude"])], {
 		icon: Icons['camera']
 	})
 	overview_features.addLayer(marker);
 
 	overview_map.setView(
-		[parseFloat(image["Latitude"]), parseFloat(image["Longitude"])],
-		calc_zoom(image["Altitude"])
+		[parseFloat(image["latitude"]), parseFloat(image["longitude"])],
+		calc_zoom(image["altitude"])
 	);
 }
 
@@ -435,6 +493,11 @@ function set_review_image(imageObj, isHistory) {
 		});
 	});
 }
+
+	// });
+// merge lint
+//	set_overview_image(image);
+//}
 
 function set_btn_visability(id, show) {
 	var btn = $("button#" + id);

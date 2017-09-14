@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>CAP Image Damage Assessment</title>
+    <link rel="stylesheet" href="css/image_review.css" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Load Leaflet from CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+        crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@0.4.12/dist/leaflet.draw.css" integrity="sha384-NZLkVuBRMEeB4VeZz27WwTRvlhec30biQ8Xx7zG7JJnkvEKRg5qi6BNbEXo9ydwv"
+        crossorigin="anonymous">
+
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+        crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-draw@0.4.12/dist/leaflet.draw.js" integrity="sha384-RvVNkwChwC2ySvAbzy4eJZmH89T0sBJrpvgYcGwL7TcW5vMx67BTOFEmugWnGV5Q"
+        crossorigin="anonymous"></script>
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@2.1.1/dist/esri-leaflet.js" integrity="sha512-ECQqaYZke9cSdqlFG08zSkudgrdF6I1d8ViSa7I3VIszJyVqw4ng1G8sehEXlumdMnFYfzY0tMgdQa4WCs9IUw=="
+        crossorigin=""></script>
+
+    <script src="js/image_review.js"></script>
+</head>
+
+<body onload="init_map()">
+    <div class="container-fluid">
+        <div class="panel review_map_panel col-xs-12 col-md-7 col-xl-10">
+            <div id="map" class="map col-xl-12"> </div>
+            <div id="navigation" class="navigation">
+                <button type="button" class="nav btn btn-primary disabled" disabled="true" onclick='previous_image();'><em class="glyphicon glyphicon-chevron-left"></em><span class=""><b>&#60;</b>&nbsp;Previous</span><span class="hidden-xs"> Image</span></button>
+                <button type="button" class="nav btn btn-primary" onclick='save_next_image();'><em class="glyphicon glyphicon-floppy-save"></em>&nbsp;Submit<span class="hidden-xs"> Assessment</span></button>
+                <button type="button" class="nav btn btn-primary" onclick='next_image();'><span class="">Skip<span class="hidden-xs"> - Next Image</span>&nbsp;<b>&#62;</b></span><em class="glyphicon glyphicon-chevron-right"></em></button>
+            </div>
+        </div>
+        <div class="damage_content col-xs-12 col-md-5 col-xl-2">
+            <div class="damage_assess_container col-sm-7 col-md-12">
+                <h3 class="header">Mark the Image with Damage Assessments</h3>
+                <a data-toggle="modal" id="imageAnalysisTrainingLink" href="templates/imageAnalysisTrainingModal.html" data-target="#myModal">FEMA: Image Analysis Training</a>
+                <div id="review_tools" class="col-xs-7 col-md-12">
+                    <div class="damage_markers col-xs-6">
+                        <div class="btn btn-block radio affected_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_A" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Affected</label>
+                        </div>
+                        <div class="btn btn-block radio minor_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_I" size="5" onclick='set_markertool("minor");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Minor</label>
+                        </div>
+                        <div class="btn btn-block radio major_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_D" size="5" onclick='set_markertool("major");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Major</label>
+                        </div>
+                        <div class="btn btn-block radio destroyed_spn tool_spn">
+                            <label><input type="radio" name="btn_DamageMarker" value="BLDG_X" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Destroyed</label>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="btn btn-block btn-primary removeMarkers tool_spn" value="eraser" size="5" onclick='set_markertool("eraser");'>
+                            <span class="hidden-xs hidden-sm">Remove All Marks on Image</span><span class="visible-xs-inline-block visible-sm-inline-block">Remove Marks</span>
+                        </div>
+                        <div class="btn btn-block btn-default radio tool_spn">
+                            <label><input type="radio" name="btn_GeneralMarker" value="impct" size="5" onclick='set_general("impact");'><span class="hidden-xs hidden-sm">In General, Impact is shown in Image</span><span class="visible-xs-inline-block visible-sm-inline-block">Impact shown</span></label>
+                        </div>
+                        <div class="btn btn-block btn-default radio tool_spn">
+                            <label><input type="radio" name="btn_GeneralMarker" value="non-impct" size="5" onclick='set_general("noimpact");' checked><span class="hidden-xs hidden-sm">In General, No Impact in Images</span><span class="visible-xs-inline-block visible-sm-inline-block">No Impact</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div id="image_info" class="col-xs-5 col-md-12">
+                    <b>Image Info:</b><br/>
+                    <b class="piLbl">Event:</b> <span id='eventname'>&lt;Event Name&gt;</span><br/>
+                    <b class="piLbl">Team:</b> <span id='teamname'>&lt;Team&gt;</span><br/>
+                    <b class="piLbl">Mission:</b> <span id='missionname'>&lt;Mission&gt;</span><br/>
+                    <b class="piLbl">Photo Date:</b> <span id='photo_date'>&lt;date&gt;</span><br/>
+                    <b class="piLbl">Altitude:</b> <span id='photo_altitude'>&lt;altitude&gt;</span>(m)<br/>
+                </div>
+            </div>
+            <div class="overview_map_container col-xs-12 col-sm-5 col-md-12">
+                <div id="overview_map" class="overview_map"> </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="te"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+</body>
+
+</html>

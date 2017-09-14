@@ -1,0 +1,15 @@
+# config_env module
+
+
+config = {}
+config["env"] = "dev"
+config["proxy"] = "true"
+config["proxyUrl"] = "http://0.0.0.0"
+config["proxyPort"] = 8888
+
+config["proxyProtocol"] = "http://"
+config["host"] = "0.0.0.0"
+
+
+
+
