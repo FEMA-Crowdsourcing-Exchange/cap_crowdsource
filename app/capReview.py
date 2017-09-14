@@ -18,12 +18,13 @@ class imgDB():
 
     def getConn(self):
         if self.dbCls == "Prod":
+            import config
             import pymssql
-            dbHost = "<db host>"
-            dbPort = 1433
-            dbUser = "<db user>"
-            dbPass = "<db pass>"
-            dbName = "ImageReviews"
+            dbHost = config.appConfig["dbHost"]
+            dbPort = config.appConfig["dbPort"]
+            dbUser = config.appConfig["dbUser"]
+            dbPass = config.appConfig["dbPass"]
+            dbName = config.appConfig["dbName"]
             db = pymssql.connect(host=dbHost, port=dbPort, user=dbUser, password=dbPass , database=dbName, as_dict=True)
             self.dbName = "MS SQL"
         else:
