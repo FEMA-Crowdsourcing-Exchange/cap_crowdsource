@@ -12,6 +12,8 @@
 - Skip images without lat/lng
 ***********/
 // GLOBALS
+var APP_URL = "";
+//  APP_URL = "http://0.0.0.0:8889/"
 var $ = window.$;
 var L = window.L;
 var OVR_ZOOM = 14;
@@ -270,7 +272,7 @@ function next_image() {
 	} else {
 		$.ajax({
 			//url: "/ImageEventsService/PublicAPI.svc/VOTE/" + eventId + "/getImage",
-			url: "http://0.0.0.0:8889/api/Image",
+			url: APP_URL + "api/Image",
 			processData: false,
 			crossDomain: true,
             headers: {'X-Requested-With': 'XMLHttpRequest'}
@@ -309,7 +311,7 @@ function save_next_image() {
 
 	$.ajax({
         type: "POST",
-        url: "http://0.0.0.0:8889/api/Save",
+        url: APP_URL + "api/Save",
         data: JSON.stringify(post_data),
         failure: save_status,
         dataType: 'json',
