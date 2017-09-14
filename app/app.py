@@ -41,7 +41,8 @@ class serviceAPI(object):
     @cherrypy.config(**{'tools.cors.on': True})
     @cherrypy.tools.json_out()
     #@cherrypy.tools.json_in()
-    #@request.cookie["session_id"]["id"]cherrypy.config(**{'tools.json_in.force': True})
+    #@request.cookie["session_id"]["id"]
+    @cherrypy.config(**{'tools.json_in.force': False})
     def Save(self, **kwargs):
         cl = cherrypy.request.headers['Content-Length']
         rawbody = cherrypy.request.body.read(int(cl))
@@ -53,7 +54,7 @@ class serviceAPI(object):
             
             print(data)
             return CAP.saveAssessment(data)
-        else
+        else:
             return False
 
 class API(object):

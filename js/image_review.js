@@ -287,6 +287,7 @@ function save_next_image() {
         data: JSON.stringify(post_data),
         failure: save_status,
         dataType: 'json',
+        contentType: 'application/json',
         crossDomain: true
         }).success(save_status);
 	//next_image();
