@@ -82,14 +82,19 @@ function apply_image_info(data) {
 		jsonData = data;
 	}
 
-    imageID = jsonData["id"];
-	set_info("#eventname", jsonData["imageeventname"]);
-	set_info("#missionname", jsonData["imagemissionname"]);
-	set_info("#teamname", jsonData["imageteamname"]);
-	set_info("#photo_date", convert_mssql_date(jsonData["exifphotodate"]));
-	set_info("#photo_altitude", jsonData["altitude"]);
+    if (jsonData && "id" in jsonData) {
+        imageID = jsonData["id"];
+        missionId = jsonData["imageMissionId"];
+	    set_info("#eventname", jsonData["imageEventName"]);
+	    set_info("#missionname", jsonData["imageMissionName"]);
+	    set_info("#teamname", jsonData["imageTeamName"]);
+	    set_info("#photo_date", convert_mssql_date(jsonData["exifphotodate"]));
+	    set_info("#photo_altitude", jsonData["altitude"]);
 
-	set_review_image(jsonData);
+	    set_review_image(jsonData);
+    } else {
+        alert("no more images to review");
+    }
     
     // set the general status to be unintialized
     assessment_general_status = '';
@@ -165,16 +170,18 @@ function checkProtocol() {
 
 function convert_mssql_date(data) {
 	var dt_str;
-	if (!data) {
-		dt_str = "";
-	} else {
+	if ( data && data.includes('Date(') ) {
 		dt_str = data.slice(6, 19);
-	}
-
-	if ( dt_str > '' ) {
         var date = new Date(parseInt(dt_str));
         dt_str = date.toISOString().slice(0, 19);
+	} else if (data) {
+        // preformated dates pass through
+        dt_str = data
+    } else {
+        // pass "unknown"
+        dt_str = "<b>unknown</b>";
     }
+
 	return dt_str;
 }
 
@@ -291,7 +298,7 @@ function save_next_image() {
     
     // set general impacted if any buildings
     if ( geoJSON.features.length > 0 ) {
-        assessment_general_status = 'impct';
+        assessment_general_status = 'impact';
     }
 
 	var post_data = { geo: geoJSON,
