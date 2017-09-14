@@ -1,0 +1,9 @@
+### config.py
+
+appConfig = { 
+       dbHost = "DB host name"
+       dbPort = 1433
+       dbUser = "<db user>"
+       dbPass = ""
+       dbName = "ImageReviews"
+       }
