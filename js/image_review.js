@@ -25,6 +25,7 @@ var IMG_HISTORY_LEN = 5;
 var Icons = createIcons();
 var eventId;
 var imageID;
+var missionId;
 var image_history = [];
 var current_image = {};
 var sample_image_json =
@@ -34,6 +35,7 @@ var bounds;
 var overview_map;
 var overview_features;
 var assessment_features;
+var assessment_general_status = '';
 var imageLyr;
 var damageMarkers = { // Marker = Severity: 'hex color'
 	"affected": '#ffffcc',
@@ -88,6 +90,10 @@ function apply_image_info(data) {
 	set_info("#photo_altitude", jsonData["altitude"]);
 
 	set_review_image(jsonData);
+    
+    // set the general status to be unintialized
+    assessment_general_status = '';
+   	$("input[name=btn_GeneralMarker]").attr("checked", false);
 }
 
 function buildLeafletDrawToolbar(map) {
@@ -277,7 +283,20 @@ function save_status(data) {
 
 function save_next_image() {
 	var geoJSON = featuresToGeoJSON(assessment_features._layers);
+
+    // force a default missionId
+    if ( !missionId ) {
+        missionId = -1
+    }
+    
+    // set general impacted if any buildings
+    if ( geoJSON.features.length > 0 ) {
+        assessment_general_status = 'impct';
+    }
+
 	var post_data = { geo: geoJSON,
+        generalStatus: assessment_general_status,
+        missionId: missionId,
 		imageId: imageID };
 	console.log("geoJSON", post_data);
 
@@ -294,6 +313,7 @@ function save_next_image() {
 }
 
 function set_general(severity) {
+    assessment_general_status = severity;
 	return;
 }
 
@@ -306,7 +326,7 @@ function set_markertool(severity) {
 		setDrawingOptions(severity);
 		$('a[title="Draw a circlemarker"] span').click();
 	} else {
-		$("input[name=btn_GeneralMarker][value=non-impct]").prop("checked", true);
+		$("input[name=btn_GeneralMarker][value=non-impct]").prop("checked", "checked");
 		assessment_features.clearLayers();
 		// $('a[title="Cancel drawing"]').click();	// Doesn't work		
 	}

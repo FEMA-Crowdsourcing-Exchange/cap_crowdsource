@@ -27,13 +27,14 @@ CREATE INDEX review_queue__reviews__ind on review_queue(reviews);
 
 
 CREATE TABLE assessment (
-    assessmentId    INTEGER PRIMARY KEY DEFAULT rowid,
+    assessment_id    INTEGER PRIMARY KEY DEFAULT rowid,
     id  TEXT,
-    missionId,  INTEGER,
-    sessionId   TEXT,
+    mission_id  INTEGER,
+    session_id   TEXT,
     ip_address  TEXT,
     assessment_time     INTEGER DEFAULT CURRENT_TIMESTAMP,
-    data    TEXT
+    data    TEXT,
+    general_status  TEXT
 );
 CREATE INDEX assessment__id__ind on assessment(id);
 

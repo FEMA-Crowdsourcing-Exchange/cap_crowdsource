@@ -53,9 +53,13 @@ class serviceAPI(object):
             data["ipAddr"] = cherrypy.request.remote.ip
             
             print(data)
-            return CAP.saveAssessment(data)
+            result = CAP.saveAssessment(data)
+            if result == True:
+                return {"status": "succeeded"}
+            else:
+                return {"status": "failed"}
         else:
-            return False
+            return {"status": "failed"}
 
 class API(object):
     @cherrypy.expose

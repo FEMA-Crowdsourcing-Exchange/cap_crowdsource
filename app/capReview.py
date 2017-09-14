@@ -1,6 +1,6 @@
 ### capReview.py
 
-import json
+import simplejson as json
 
 
 def dict_factory(cursor, row):
@@ -30,6 +30,8 @@ class imgDB():
             import sqlite3
             db = sqlite3.connect("db/review.db")
             self.dbName = "SQLite3"
+
+        # automatically build named b=pairs for the DB
         db.row_factory = dict_factory
         return db
         
@@ -40,8 +42,11 @@ class imgDB():
         db = self.getConn()
         c = db.cursor()
 
-        c.execute("""INSERT INTO assessment (id, data, sessionId, ip_address)
-            SELECT '%s', '%s', '%s', '%s';""" %(data["imageId"], json.dumps(data["geo"]), data["session"], data["ipAddr"]))
+        c.execute("""INSERT INTO assessment (id, mission_id, data, general_status, session_id, ip_address)
+            SELECT '%s', %d, '%s', '%s', '%s', '%s';""" %(data["imageId"], 
+                    int(json.dumps(data["missionId"])),
+                    json.dumps(data["geo"]), json.dumps(data["generalStatus"]),
+                    data["session"], data["ipAddr"]))
         c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP , reviews = reviews + 1 WHERE id = '%s' """ %(data["imageId"]))
         db.commit()
         
