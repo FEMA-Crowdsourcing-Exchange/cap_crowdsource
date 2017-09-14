@@ -1,7 +1,6 @@
 // image_review.js
 /*********** 
 * TODO: 
-- Create "buildPayload" function for 'save' (Will need Session ID, timestamp, and Token)
 - Create tooltip for each btn_DamageMarker
 - Read in variables from js file for urls
 - Enable users marking overview map to georectify image to map; 2x locations each
@@ -22,7 +21,7 @@ var IMG_ZOOM_MAX = 14;
 var IMG_DEFAULT_SIZE = [0, 0, 1600, 1200];
 var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / 4, IMG_DEFAULT_SIZE[2] / 4];
 var IMG_CENTER;
-var IMG_RETRY_MAX_ATTEMPTS = 0; //8;
+var IMG_RETRY_MAX_ATTEMPTS = 8;
 var Icons = create_icons();
 var eventId;
 var image_history = [];
@@ -78,25 +77,15 @@ function activate() {
 }
 
 function add_image_to_history(image) { // Call after imageLyr and assessment_features layers are created
-	// console.log("add_image_to_history - imageLyr", imageLyr);
 	var imageObj = {
-		assessment: {
-			geoJSON: ""
-		},
 		// overview: {
 
 		// },
 		image: image,
-		// imageLyr: $.extend({}, imageLyr),
-		// imageLyr: imageLyr,
-		// assessment_features: assessment_features,
 		imageLyr: "",
 		assessment_features: "",
 		// overview_features: overview_features,
-		cookie: "", // set when submitted
-		sessionID: "", // set when submitted
-		submitted: false,
-		timestamp: "" // set when submitted
+		submitted: false
 	};
 	image_history.push(imageObj);
 	console.log("image_history", image_history);
@@ -143,7 +132,6 @@ function build_leaflet_draw_toolbar(map, editFeatureGroup) {
 		}
 	});
 	map.addControl(drawControl);
-	console.log("drawControl", drawControl);
 
 	map.on(L.Draw.Event.DRAWSTART, function () {
 		var damageMarker = $("input[name=btn_DamageMarker]:checked");
@@ -151,10 +139,7 @@ function build_leaflet_draw_toolbar(map, editFeatureGroup) {
 			$("input[name=btn_DamageMarker][value=affected]").prop("checked", "checked");
 			set_drawing_options('affected');
 		} else {
-			console.log("damageMarker", damageMarker);
-			console.log("value", damageMarker[0].value);
 			set_drawing_options(damageMarker[0].value);
-			//			set_drawing_options('affected');			
 		}
 	});
 
@@ -186,19 +171,20 @@ function build_leaflet_draw_toolbar(map, editFeatureGroup) {
 	}
 }
 
-// function buildPayload() {
-// 	return {
-// 		assessment: {
-// 			geoJSON: features_to_geoJSON(assessment_features._layers)
-// 		},
-// 		overview: {
+function buildPayload(imageObj) {
+	imageObj.submitted = true;
+	return {
+		assessment: {
+			geoJSON: features_to_geoJSON(imageObj.assessment_features._layers)
+		},
+		overview: {
 
-// 		},
-// 		cookie: document.cookie,
-// 		sessionID: "",
-// 		timestamp: Date()
-// 	}
-// }
+		},
+		cookie: document.cookie,
+		sessionID: "",
+		timestamp: Date()
+	}
+}
 
 function calc_zoom(altitude) {
 	var index = dec_to_base2_exponent(altitude * 10);
@@ -270,7 +256,6 @@ function features_to_geoJSON(featureCollection) {
 }
 
 function image_history_next() {
-	console.log("image_history_next");
 	if (image_index >= image_history.length) {
 		console.warn("function image_history_next() -> image_index = " + image_index + " and should not be >= image_history.length, which is " + image_history.length);
 		image_index = image_history.length - 1;
@@ -359,7 +344,6 @@ function next_image_wrapper(data) {
 }
 
 function previous_image() {
-	console.log("previous_image");
 	if (image_index < 0) {
 		console.warn("function previous_image() -> image_index = " + image_index + " and should not be < 0");
 		image_index = 0;
@@ -374,8 +358,7 @@ function previous_image() {
 }
 
 function save_next_image() {
-	// console.log("payload", buildPayload());
-	image_history[image_index].submitted = true;
+	console.log("Submitted", buildPayload(image_history[image_index]));
 	next_image();
 }
 
