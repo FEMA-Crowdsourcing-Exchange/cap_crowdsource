@@ -32,6 +32,7 @@ class serviceAPI(object):
     @cherrypy.tools.json_in()
     def Image(self):
         cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
+        cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
         #return "rr"
         return CAP.nextImage()
 

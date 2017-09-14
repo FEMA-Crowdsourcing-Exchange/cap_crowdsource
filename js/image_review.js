@@ -12,8 +12,8 @@
 - Should users be able to later submit images using "previous" if skipped over?
 ***********/
 // GLOBALS
-// var APP_URL = "";
-var APP_URL = "http://localhost:8889/"
+var APP_URL = "";
+// var APP_URL = "http://0.0.0.0:8889/"
 var $ = window.$;
 var L = window.L;
 var OVR_ZOOM = 14;
@@ -453,8 +453,14 @@ function set_overview_image(image) {
 
 function set_review_image(imageObj, isHistory) {
 	if (assessment_features) assessment_features.remove();
-	if (imageThumbnailLyr) imageThumbnailLyr.remove();
-	if (imageLyr) imageLyr.remove();
+	if (imageThumbnailLyr) {
+        map.removeLayer(imageThumbnailLyr);
+        imageThumbnailLyr.remove();
+    }
+	//if (imageLyr) {
+    //    map.removeLayer(imageLyr);
+    //    imageLyr.remove();
+    //}
 	map.setView(IMG_CENTER, IMG_ZOOM);
 	imageThumbnailLyr = L.imageOverlay(imageObj.image["thumbnailurl"], bounds).addTo(map);
 	if (!isHistory) {
@@ -466,6 +472,10 @@ function set_review_image(imageObj, isHistory) {
 	if (!imageObj.submitted) build_leaflet_draw_toolbar(map, assessment_features);
 	update_nav(imageObj, isHistory)
 	imageThumbnailLyr.on("load", function () {
+        if (imageLyr) {
+            map.removeLayer(imageLyr);
+            imageLyr.remove();
+        }
 		set_overview_image(imageObj.image);
 		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageObj.imageLyr = imageLyr;
