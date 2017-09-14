@@ -1,0 +1,2 @@
+cherrypy
+cherrypy_cors
