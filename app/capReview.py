@@ -24,15 +24,15 @@ class imgDB():
             dbUser = "<db user>"
             dbPass = "<db pass>"
             dbName = "ImageReviews"
-            db = pymssql.connect(host=dbHost, port=dbPort, user=dbUser, password=dbPass , database=dbName)
+            db = pymssql.connect(host=dbHost, port=dbPort, user=dbUser, password=dbPass , database=dbName, as_dict=True)
             self.dbName = "MS SQL"
         else:
             import sqlite3
             db = sqlite3.connect("db/review.db")
             self.dbName = "SQLite3"
+            # automatically build named b=pairs for the DB
+            db.row_factory = dict_factory
 
-        # automatically build named b=pairs for the DB
-        db.row_factory = dict_factory
         return db
         
     def sqlSafe(data):
@@ -75,14 +75,21 @@ class imgDB():
         c = db.cursor()
 
         # only server allowed images
-        c.execute("""SELECT id, imageurl, thumbnailurl, uploaddate, altitude, Latitude, Longitude, 
-                EXIFPhotoDate, EXIFCameraMaker, EXIFCameraModel, EXIFFocalLength,
-                imagemissionId, imageEventName, imageTeamName, imageMissionName
+        if self.dbName == "MS SQL":
+            mssql_limit = "TOP 1"
+            sqlite_limit = ""
+        else:
+            mssql_limit = ""
+            sqlite_limit = "LIMIT 1"
+
+        c.execute("""SELECT %s id, imageurl, thumbnailurl, uploaddate, altitude, latitude, longitude, 
+                exifphotodate, exifcameraMaker, exifcameramodel, exiffocallength,
+                imagemissionId, imageeventname, imageteamname, imagemissionname
             FROM  review_queue
             WHERE reviews < %d and
               status in ('i','p')
             ORDER BY lastReview
-            LIMIT 1;""" %(self.tgtReviews))
+            %s;""" %(mssql_limit, self.tgtReviews, sqlite_limit))
         r = c.fetchone()
         if len(r) > 0:
             print(r)
@@ -92,6 +99,12 @@ class imgDB():
         else:
             # return a dummy image
             r = {}
+
+        print(r)
+        
+        # forc an MSSQL raw date type to the ISO form
+        r["exifphotodate"] = str(r["exifphotodate"])
+        r["uploaddate"] = str(r["uploaddate"])
         return r
 
     def retrieve(self, imageId):

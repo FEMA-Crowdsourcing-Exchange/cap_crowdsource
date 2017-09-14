@@ -86,10 +86,10 @@ function apply_image_info(data) {
 
     if (jsonData && "id" in jsonData) {
         imageID = jsonData["id"];
-        missionId = jsonData["imageMissionId"];
-	    set_info("#eventname", jsonData["imageEventName"]);
-	    set_info("#missionname", jsonData["imageMissionName"]);
-	    set_info("#teamname", jsonData["imageTeamName"]);
+        missionId = jsonData["imageMissionid"];
+	    set_info("#eventname", jsonData["imageeventname"]);
+	    set_info("#missionname", jsonData["imagemissionname"]);
+	    set_info("#teamname", jsonData["imageteamname"]);
 	    set_info("#photo_date", convert_mssql_date(jsonData["exifphotodate"]));
 	    set_info("#photo_altitude", jsonData["altitude"]);
 
@@ -238,7 +238,8 @@ function init_overview_map() {
 
 function init_review_map() {
 	// dimensions of the image
-	var url = 'https://imgs.xkcd.com/comics/online_communities.png';
+    // https://imgs.xkcd.com/comics/online_communities.png
+	var url = 'https://s3.amazonaws.com/fema-cap-imagery/ref/Carte_detailee_de_west_point.jpg';
 
 	// Using leaflet.js to pan and zoom an image.
 	// create the map
@@ -380,8 +381,15 @@ function set_review_image(image) {
 }
 
 function calcZoom(altitude) {
-	var index = decToBase2Exponent(altitude * 10);
-	return OVR_ZOOM + (OVR_ZOOM - index);	
+    // 	var index = decToBase2Exponent(altitude * 10);
+    var index = OVR_ZOOM;
+    
+    if ( altitude < 200 ) { index = 14 }
+    else if ( altitude < 400 ) { index = 15 }
+    else if ( altitude < 600 ) { index = 16 }
+    else { index = 17 }
+
+    return OVR_ZOOM + (OVR_ZOOM - index);	
 }
 
 function decToBase2Exponent(d) {

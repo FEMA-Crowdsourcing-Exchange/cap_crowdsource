@@ -66,6 +66,10 @@ class API(object):
     def index(self):
         return open('review.html', 'r')
 
+def application(env, start_response):
+    start_response('200 OK', [('Content-Type', 'text/html')])
+    return ["Hello!"]
+
 if __name__ == '__main__':
     
     conf = {
@@ -117,6 +121,7 @@ if __name__ == '__main__':
     #cherrypy.engine.subscribe('start', setup_database)
     #cherrypy.engine.subscribe('stop', cleanup_database)
     CAP = capReview.imgDB('Devel')
+    #CAP = capReview.imgDB('Prod')
 
     webapp = API()
     webapp.api = serviceAPI()
