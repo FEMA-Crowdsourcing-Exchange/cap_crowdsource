@@ -1,2 +1,3 @@
-cherrypy
-cherrypy_cors
+cherrypy==11.0.0
+cherrypy_cors==1.5
+simplejson==3.11.1
