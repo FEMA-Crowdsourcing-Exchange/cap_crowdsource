@@ -1,7 +1,11 @@
 // image_review.js
 /*********** 
 * TODO: 
+- Create "buildPayload" function for 'save' (Will need Session ID, timestamp, and Token)
+- Use payload archive to enable 'Previous Image' functionality
 - Create tooltip for each btn_DamageMarker
+- Cancel imageOverlay load upon "previous", "next", or "submit"
+- Set overview zoom based on altitude
 - Read in variables from js file for urls
 - Enable users marking overview map to georectify image to map; 2x locations each
 - Allow users to submit comments with their assessment
