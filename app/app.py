@@ -53,7 +53,7 @@ class serviceAPI(object):
             data["session"] = str(cherrypy.session.id)
             data["ipAddr"] = cherrypy.request.remote.ip
             
-            print(data)
+            #print(data)
             result = CAP.saveAssessment(data)
             if result == True:
                 return {"status": "succeeded"}

@@ -39,8 +39,8 @@ CREATE TABLE assessment (
     session_id   VARCHAR(50),
     ip_address  VARCHAR(25),
     assessment_time     DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data    VARCHAR(1500),
-    general_status  VARCHAR(2500)
+    data    VARCHAR(5500),
+    general_status  VARCHAR(50)
 );
 CREATE INDEX assessment__id__ind on assessment(id);
 GO

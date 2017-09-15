@@ -2,7 +2,7 @@
 
 copy_files() {
    if [ -n "$1" ]; then
-       rsync -pvr js img css templates data setup.txt README.md doc  $1
+       rsync -pvr js img css templates data setup.txt requirements.txt README.md doc  $1
        mkdir -p ${1}/app/db
        cp -pr app/db/review.db ${1}/app/db
        rsync -pr app/public app/review.html app/*py ${1}/app
@@ -17,7 +17,6 @@ package() {
   
   pushd tmp
   dt=`date +%s`
-  dt="1505408134"
   zip -9 -r DamageApp_${dt}.zip DamageReview
   myZip="DamageApp_${dt}.zip"
   python -m awscli s3 cp ${myZip} s3://fema-capuploader-data/damageReview/${myZip} --acl public-read --profile fema_sandbox
