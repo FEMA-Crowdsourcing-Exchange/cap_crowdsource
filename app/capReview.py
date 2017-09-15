@@ -49,7 +49,6 @@ class imgDB():
         for fld in ['imageId','missionId','geo','generalStatus','ipAddr','session']:
             if not sqlSafe(fld):
                 return False
-
         return True
 
     def saveAssessment(self, data):
@@ -138,6 +137,7 @@ class imgDB():
                         NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
                                WHERE mrs.imageMissionId = im.imageMissionId)
                     GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(self.coreCapDB))
+        return True
 
     def releaseFlightToReview(self, missionId):
         db = self.getConn()
@@ -170,6 +170,7 @@ class imgDB():
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
         db.commit()ssh fema
+        return True
 
     def closeFlight(self, missionId):
         db = self.getConn()
@@ -180,6 +181,7 @@ class imgDB():
         c.execute("""UPDATE mission_review_status SET review_status = 'X'
                     WHERE imageMissionId = %d"""%(missionId))
         db.commit()
+        return True
 
     def reopenFlight(self, missionId):
         db = self.getConn()
@@ -190,7 +192,7 @@ class imgDB():
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
         db.commit
-
+        return True
 
 def main():
     pass
