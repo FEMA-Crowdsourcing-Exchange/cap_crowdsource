@@ -2,9 +2,8 @@
 /*********** 
 * TODO: 
 - Create tooltip for each btn_DamageMarker
-- Read in variables from js file for urls
-- Enable users marking overview map to georectify image to map; 2x locations each
 - Allow users to submit comments with their assessment
+- Enable users marking overview map to georectify image to map; 2x locations each
 
 * QUESTIONS:
 - Should users comment per marker or per image?
@@ -44,7 +43,6 @@ var imageRetryAttempt = 0;
 var loadHiResDelay = 500; // wait 500ms before accepting next request to load hiRes image
 var loadHiResReady = true;
 var loadHiResTimeout;
-var queuedHiRes = "";
 var damage_markers = { // Marker = Severity: 'hex color'
 	"affected": '#ffffcc',
 	"minor": '#ffc000',
@@ -59,21 +57,19 @@ activate();
 // Functions
 
 function activate() {
+	$.get('/templates/modal.html', function (template) {
+		$(template).appendTo('body');
+		if (!check_protocol()) {
+			$("#myModal").modal({
+				"remote": "templates/redirectModal.html"
+			});
+			return;
+		}
+	});
 	$.ajaxPrefilter(function (options) {
 		if (options.crossDomain && window.location.host === "localhost:8888") {
-			// var newData = {};
-			// // Copy the options.data object to the newData.data property.
-			// // We need to do this because javascript doesn't deep-copy variables by default.
-			// newData.data = $.extend({}, options.data);
-			// newData.url = options.url;
-
-			// Reset the options object - we'll re-populate in the following lines.
-			// options = {};
-
 			// Set the proxy URL
 			if (options.url[0] === "/") options.url = "http://127.0.0.1:8888" + options.url;
-
-			// options.data = $.param(newData);
 		} else {
 			options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
 		}
@@ -315,12 +311,15 @@ function image_history_next() {
 }
 
 function init_map() {
-	if (!check_protocol()) {
-		$("#myModal").modal({
-			"remote": "templates/redirectModal.html"
-		});
-		return;
-	}
+	// $.get('/templates/modal.html', function (template) {
+	// 	$(template).appendTo('body');
+	// 	if (!check_protocol()) {
+	// 		$("#myModal").modal({
+	// 			"remote": "templates/redirectModal.html"
+	// 		});
+	// 		return;
+	// 	}
+	// });
 	init_review_map();
 	init_overview_map();
 	next_image();
@@ -489,7 +488,6 @@ function set_review_image(imageObj, isHistory) {
 		}, loadHiResDelay);
 	} else {
 		clearTimeout(loadHiResTimeout);
-		queuedHiRes = imageObj.image["imageurl"];
 		loadHiResTimeout = setTimeout(function () {
 			loadHiResReady = true;
 			loadHiResTimeout = "";
@@ -529,7 +527,7 @@ function set_review_image(imageObj, isHistory) {
 		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageLyr.on("load", function () {
 			imageRetryAttempt = 0;
-			loadHiResReady = true;			
+			loadHiResReady = true;
 			if (!overviewLoaded) {
 				set_overview_image(imageObj.image);
 				overviewLoaded = true;
