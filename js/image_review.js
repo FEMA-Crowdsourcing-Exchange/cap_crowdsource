@@ -529,7 +529,7 @@ function set_review_image(imageObj, isHistory) {
 		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageLyr.on("load", function () {
 			imageRetryAttempt = 0;
-			clearTimeout(loadHiResTimeout);
+			loadHiResReady = true;			
 			if (!overviewLoaded) {
 				set_overview_image(imageObj.image);
 				overviewLoaded = true;
@@ -541,7 +541,7 @@ function set_review_image(imageObj, isHistory) {
 			imageObj.imageLyr = imageLyr;
 		});
 		imageLyr.on("error", function () {
-			clearTimeout(loadHiResTimeout);
+			loadHiResReady = true;
 			if (imageLyr) {
 				map.removeLayer(imageLyr);
 				imageLyr.remove();
