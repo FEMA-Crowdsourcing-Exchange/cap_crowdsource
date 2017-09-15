@@ -37,6 +37,7 @@ class imgDB():
             # automatically build named b=pairs for the DB
             db.row_factory = dict_factory
             self.coreCapDB = "mirror"
+            ## attach the mirror db when needed
 
         return db
         
@@ -169,7 +170,7 @@ class imgDB():
                       status = 'x' """%(missionId))
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
-        db.commit()ssh fema
+        db.commit()
         return True
 
     def closeFlight(self, missionId):
@@ -192,7 +193,7 @@ class imgDB():
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
         db.commit
-        return True
+        return True 
 
 def main():
     pass
