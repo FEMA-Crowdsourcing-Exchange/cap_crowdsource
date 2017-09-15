@@ -6,5 +6,6 @@ appConfig = {
        "dbUser": "<db user>",
        "dbPass": "<db password>",
        "dbName": "ImageReviews",
-       "dbCls":  "Devel | Prod"
+       "dbCls":  "Devel | Prod",
+       "coreCapDB": "mirror"
        }

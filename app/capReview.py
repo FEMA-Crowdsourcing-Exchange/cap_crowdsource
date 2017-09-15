@@ -27,12 +27,16 @@ class imgDB():
             dbName = config.appConfig["dbName"]
             db = pymssql.connect(host=dbHost, port=dbPort, user=dbUser, password=dbPass , database=dbName, as_dict=True)
             self.dbName = "MS SQL"
+            #self.coreCapDB = config.appConfig["coreCapDB"]
+            self.coreCapDB = "ImageEvents.dbo"
         else:
+            import config
             import sqlite3
             db = sqlite3.connect("db/review.db")
             self.dbName = "SQLite3"
             # automatically build named b=pairs for the DB
             db.row_factory = dict_factory
+            self.coreCapDB = "mirror"
 
         return db
         
@@ -127,13 +131,13 @@ class imgDB():
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
                 SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, '', CURRENT_TIMESTAMP
-                    FROM  ImageEvents.dbo.imageeventImages im
+                    FROM  %s.imageeventImages im
                     WHERE 
                         im.latitude > 0 and
                         im.imageeventid in (9073, 9074) and
                         NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
                                WHERE mrs.imageMissionId = im.imageMissionId)
-                    GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(missionId))
+                    GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(self.coreCapDB))
 
     def releaseFlightToReview(self, missionId):
         db = self.getConn()
@@ -146,26 +150,26 @@ class imgDB():
                     id, uploaddate, altitude, latitude, longitude,
                     exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, 
                     imageMissionId, imageEventName, imageTeamName, imageMissionName, imageurl, thumbnailurl, shape.STAsText(), 'i'
-                FROM ImageEvents.dbo.imageeventImages im
+                FROM %s.imageeventImages im
                 WHERE im.imagemissionId = %d and
                     im.latitude > 0 and
                     NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
-                            WHERE imageMissionId = im.imageMissionId);"""%(missionId))
+                            WHERE imageMissionId = im.imageMissionId);"""%(self.coreCapDB, missionId))
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
                 SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, 'A', CURRENT_TIMESTAMP
-                    FROM  ImageEvents.dbo.imageeventImages im
+                    FROM  %s.imageeventImages im
                     WHERE im.imageMissionId = %d and
                         im.latitude > 0 and
                         NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
                                WHERE mrs.imageMissionId = im.imageMissionId)
-                    GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(missionId))
+                    GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(self.coreCapDB, missionId))
         c.execute("""UPDATE review_queue SET status = 'p'
                     WHERE imageMissionId = %d and
                       status = 'x' """%(missionId))
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
-        db.commit()
+        db.commit()ssh fema
 
     def closeFlight(self, missionId):
         db = self.getConn()
