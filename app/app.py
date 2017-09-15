@@ -7,6 +7,8 @@ import capReview
 import cherrypy
 import cherrypy_cors
 import simplejson as json
+## app setting
+import config
 
 DB_STRING = "my.db"
 WD = os.getcwd()
@@ -121,8 +123,7 @@ if __name__ == '__main__':
     
     #cherrypy.engine.subscribe('start', setup_database)
     #cherrypy.engine.subscribe('stop', cleanup_database)
-    CAP = capReview.imgDB('Devel')
-    #CAP = capReview.imgDB('Prod')
+    CAP = capReview.imgDB(config.appConfig["dbCls"])
 
     webapp = API()
     webapp.api = serviceAPI()
