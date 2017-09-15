@@ -153,7 +153,7 @@ div#review_tools div.btn.tool_spn.removeMarkers {
 }
 
 .major_spn {
-	background-color: #ff7c80;
+	background-color: #FF4D4D;
 }
 
 .destroyed_spn {
@@ -165,11 +165,11 @@ div.btn.affected_spn:hover {
 }
 
 div.btn.minor_spn:hover {
-	background-color: #FFDA1A;
+	background-color: #FFCD26
 }
 
 div.btn.major_spn:hover {
-	background-color: #FFAFB3;
+	background-color: #FF6666;
 }
 
 div.btn.destroyed_spn:hover {
@@ -178,7 +178,7 @@ div.btn.destroyed_spn:hover {
 
 div#review_tools>div>.btn.btn-block:hover {
 	border-width: 2px;
-	padding: 5px 11px; 
+	padding: 5px 11px;
 }
 
 div.modal-xl {
@@ -193,7 +193,7 @@ div.modal-xl div.modal-content {
 	background-size: cover;
 }
 
-div.modal-xl.tooltipModal div.modal-content {	
+div.modal-xl.tooltipModal div.modal-content {
 	background-image: none;
 }
 
@@ -205,7 +205,7 @@ div.modal-xl div.modal-body {
 	height: 80%;
 }
 
-div.modal-xl.tooltipModal div.modal-content div.modal-body {	
+div.modal-xl.tooltipModal div.modal-content div.modal-body {
 	overflow-y: auto;
 }
 
@@ -218,10 +218,46 @@ div.modal-body>object {
 	height: 100%;
 }
 
+table.table.table-bordered.tooltipModalTable {
+	border: black solid 2px;
+}
+
 div#tooltipModal table.tooltipModalTable>tbody>tr.assessmentText>td,
 div#tooltipModal table.tooltipModalTable>tbody>tr>th,
 div#tooltipModal table.tooltipModalTable>thead>tr>th.span {
 	text-align: center;
+}
+
+div#tooltipModal table.tooltipModalTable.affected {
+	background-color: #FFFFE6;
+}
+
+div#tooltipModal table.tooltipModalTable.minor {
+	background-color: #FFCD26;
+}
+
+div#tooltipModal table.tooltipModalTable.major {
+	background-color: #FF6666;
+}
+
+div#tooltipModal table.tooltipModalTable.destroyed {
+	background-color: #CC99FF;
+}
+
+div#tooltipModal table.tooltipModalTable.affected th {
+	background-color: #ffffcc;
+}
+
+div#tooltipModal table.tooltipModalTable.minor th {
+	background-color: #ffc000;
+}
+
+div#tooltipModal table.tooltipModalTable.major th {
+	background-color: #FF4D4D;
+}
+
+div#tooltipModal table.tooltipModalTable.destroyed th {
+	background-color: #9966ff;
 }
 
 div#tooltipModal table.tooltipModalTable>tbody>tr.assessmentText>th {

@@ -47,7 +47,7 @@ var loadHiResTimeout;
 var damage_markers = { // Marker = Severity: 'hex color'
 	"affected": '#ffffcc',
 	"minor": '#ffc000',
-	"major": '#ff7c80',
+	"major": '#FF4D4D',
 	"destroyed": '#9966ff'
 };
 var set_drawing_options; // exposing function globally
@@ -644,12 +644,12 @@ function build_damage_marker_tooltips() {
 		e.preventDefault();
 		var modal = $("#tooltipModal"),
 			type = e.currentTarget.dataset.type;
+		modal.find('table.tooltipModalTable').removeClass("affected minor major destroyed").addClass(type);
 		modal.find('.modal-title').text('"' + toTitleCase(type) + '" Damage Classification Chart');
 		modal.find('tr.assessmentText').each(function (index) {
 			$(this).html(templates[type][index]);
 		});
 		modal.find('p#INUNDATION_ASSESSMENTS').html("<b>INUNDATION ASSESSMENT:</b> " + classificationText.INUNDATION_ASSESSMENTS[type]);
-		modal.find('div.modal-content>div.modal-body>table.tooltipModalTable').css("background-color", damage_markers[type]);
 		modal.modal();
 	});
 }
