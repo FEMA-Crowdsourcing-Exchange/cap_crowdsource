@@ -9,7 +9,7 @@
     <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
     <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
     <script src="js/polyfill_str.includes.js"></script>
-    
+
     <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- Load Leaflet from CDN -->
@@ -48,16 +48,24 @@
                 <div id="review_tools" class="col-xs-7 col-md-12">
                     <div class="damage_markers col-xs-6">
                         <div class="btn btn-block radio affected_spn tool_spn">
-                            <label><input type="radio" name="btn_DamageMarker" value="affected" size="5" onclick='set_markertool("affected");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Affected</label>
+                            <label><input type="radio" name="btn_DamageMarker" value="affected" size="5" onclick='set_markertool("affected");'>
+                                <span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Affected<a data-toggle="tooltip" data-type="affected" title="Click to view 'Affected' Damage Classification Chart"><b>**</b></a>
+                            </label>
                         </div>
-                        <div class="btn btn-block radio minor_spn tool_spn">
-                            <label><input type="radio" name="btn_DamageMarker" value="minor" size="5" onclick='set_markertool("minor");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Minor</label>
+                        <div class="btn btn-block radio minor_spn tool_spn" rel="tooltip">
+                            <label><input type="radio" name="btn_DamageMarker" value="minor" size="5" onclick='set_markertool("minor");'>
+                                <span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Minor<a data-toggle="tooltip" data-type="minor" title="Click to view 'Minor' Damage Classification Chart"><b>**</b></a>
+                            </label>
                         </div>
-                        <div class="btn btn-block radio major_spn tool_spn">
-                            <label><input type="radio" name="btn_DamageMarker" value="major" size="5" onclick='set_markertool("major");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Major</label>
+                        <div class="btn btn-block radio major_spn tool_spn" rel="tooltip">
+                            <label><input type="radio" name="btn_DamageMarker" value="major" size="5" onclick='set_markertool("major");'>
+                                <span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Major<a data-toggle="tooltip" data-type="major" title="Click to view 'Major' Damage Classification Chart"><b>**</b></a>
+                            </label>
                         </div>
-                        <div class="btn btn-block radio destroyed_spn tool_spn">
-                            <label><input type="radio" name="btn_DamageMarker" value="destroyed" size="5" onclick='set_markertool("destroyed");'><span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Destroyed</label>
+                        <div class="btn btn-block radio destroyed_spn tool_spn" rel="tooltip">
+                            <label><input type="radio" name="btn_DamageMarker" value="destroyed" size="5" onclick='set_markertool("destroyed");'>
+                                <span class="hidden-xs">Mark <span class="hidden-sm">Buildings as </span></span>Destroyed<a data-toggle="tooltip" data-type="destroyed" title="Click to view 'Destroyed' Damage Classification Chart"><b>**</b></a>
+                            </label>
                         </div>
                     </div>
                     <div class="col-xs-6">

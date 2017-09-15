@@ -157,17 +157,28 @@ div#review_tools div.btn.tool_spn.removeMarkers {
 }
 
 .destroyed_spn {
-	/* background-color: #f03b20; */
 	background-color: #9966ff;
 }
 
-.affected_spn:hover,
-.minor_spn:hover,
-.major_spn:hover,
+.affected_spn:hover {
+	background-color: #FFFFE6;
+}
+
+.minor_spn:hover {
+	background-color: #FFDA1A;
+}
+
+.major_spn:hover {
+	background-color: #FFAFB3;
+}
+
 .destroyed_spn:hover {
-	opacity: 0.5;
-	filter: alpha(opacity=50);
-	/* For IE8 and earlier */
+	background-color: #CC99FF;
+}
+
+div#review_tools>div>.btn.btn-block:hover {
+	border-width: 2px;
+	padding: 5px 11px; 
 }
 
 div.modal-xl {
@@ -182,12 +193,20 @@ div.modal-xl div.modal-content {
 	background-size: cover;
 }
 
+div.modal-xl.tooltipModal div.modal-content {	
+	background-image: none;
+}
+
 div.modal-xl div.modal-header {
 	height: 10%;
 }
 
 div.modal-xl div.modal-body {
 	height: 80%;
+}
+
+div.modal-xl.tooltipModal div.modal-content div.modal-body {	
+	overflow-y: auto;
 }
 
 div.modal-xl div.modal-footer {
@@ -199,6 +218,16 @@ div.modal-body>object {
 	height: 100%;
 }
 
+div#tooltipModal table.tooltipModalTable>tbody>tr.assessmentText>td,
+div#tooltipModal table.tooltipModalTable>tbody>tr>th,
+div#tooltipModal table.tooltipModalTable>thead>tr>th.span {
+	text-align: center;
+}
+
+div#tooltipModal table.tooltipModalTable>tbody>tr.assessmentText>th {
+	text-align: left;
+}
+
 div#redirectModalText a {
 	color: white;
 }
@@ -208,6 +237,6 @@ div#redirectModalText a {
 * Leaflet Styles:
 ****************/
 
-div.leaflet-draw.leaflet-control>div.leaflet-draw-section>ul.leaflet-draw-actions.leaflet-draw-actions-top>li>a[title="Save changes"]:after{
+div.leaflet-draw.leaflet-control>div.leaflet-draw-section>ul.leaflet-draw-actions.leaflet-draw-actions-top>li>a[title="Save changes"]:after {
 	content: " Edits";
 }
