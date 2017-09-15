@@ -76,4 +76,4 @@ INSERT INTO mission_review_status (imageMissionId, imageEventName, imageTeamName
         FROM  mirror.images
         WHERE imageMissionId = 613586 and
            latitude > 0
-        GROUP BY 1;
+        GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;

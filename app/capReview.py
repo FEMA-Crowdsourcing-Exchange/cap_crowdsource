@@ -113,11 +113,13 @@ class imgDB():
         c.execute("""UPDATE mission_review_status SET reviewed_images = (SELECT count(*) FROM review_queue r 
               WHERE r.status in ('p','c') and
                   r.imageMissionId = mission_review_status.imagemissionid);""")
-
+        db.commit()
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageeventname, imageteamname, imagemissionname, images, reviewed_images, review_status, review_start
             FROM mission_review_status
             ORDER BY imageeventname, imageteamname, imagemissionname;""")
+        r = c.fetchall()
+        return r
         
     def scanForFlights(self):
         db = self.getConn()
@@ -125,14 +127,15 @@ class imgDB():
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
                 SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, '', CURRENT_TIMESTAMP
-                    FROM  ImageEvents.dbo.imageeventImages
+                    FROM  ImageEvents.dbo.imageeventImages im
                     WHERE 
-                        latitude > 0 and
+                        im.latitude > 0 and
+                        im.imageeventid in (9073, 9074) and
                         NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
-                               WHERE mrs.imageMissionId = ImageEvents.dbo.imageeventImages.imageMissionId)
+                               WHERE mrs.imageMissionId = im.imageMissionId)
                     GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(missionId))
 
-    def releaseFlighttoReview(self, missionId):
+    def releaseFlightToReview(self, missionId):
         db = self.getConn()
         c = db.cursor()
         c.execute("""
@@ -143,38 +146,36 @@ class imgDB():
                     id, uploaddate, altitude, latitude, longitude,
                     exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, 
                     imageMissionId, imageEventName, imageTeamName, imageMissionName, imageurl, thumbnailurl, shape.STAsText(), 'i'
-                FROM ImageEvents.dbo.imageeventImages
-                WHERE imagemissionId = %d and
-                    latitude > 0 and
+                FROM ImageEvents.dbo.imageeventImages im
+                WHERE im.imagemissionId = %d and
+                    im.latitude > 0 and
                     NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
-                            WHERE imageMissionId = ImageEvents.dbo.imageeventImages.imageMissionId);"""%(missionId))
+                            WHERE imageMissionId = im.imageMissionId);"""%(missionId))
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
                 SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, 'A', CURRENT_TIMESTAMP
-                    FROM  ImageEvents.dbo.imageeventImages
-                    WHERE imageMissionId = %d and
-                        latitude > 0 and
+                    FROM  ImageEvents.dbo.imageeventImages im
+                    WHERE im.imageMissionId = %d and
+                        im.latitude > 0 and
                         NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
-                               WHERE mrs.imageMissionId = ImageEvents.dbo.imageeventImages.imageMissionId)
+                               WHERE mrs.imageMissionId = im.imageMissionId)
                     GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;"""%(missionId))
         c.execute("""UPDATE review_queue SET status = 'p'
                     WHERE imageMissionId = %d and
                       status = 'x' """%(missionId))
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
-
-        pass
+        db.commit()
 
     def closeFlight(self, missionId):
         db = self.getConn()
         c = db.cursor()
-        c.execute("""UPDATE review_queue SET status = 'p'
+        c.execute("""UPDATE review_queue SET status = 'd'
                     WHERE imageMissionId = %d and
-                      status = 'x' """%(missionId))
-        c.execute("""UPDATE mission_review_status SET review_status = 'A'
+                      status in ('i','p')' """%(missionId))
+        c.execute("""UPDATE mission_review_status SET review_status = 'X'
                     WHERE imageMissionId = %d"""%(missionId))
-
-        pass
+        db.commit()
 
     def reopenFlight(self, missionId):
         db = self.getConn()
@@ -184,8 +185,7 @@ class imgDB():
                       status = 'x' """%(missionId))
         c.execute("""UPDATE mission_review_status SET review_status = 'A'
                     WHERE imageMissionId = %d"""%(missionId))
-        pass
-
+        db.commit
 
 
 def main():
