@@ -41,6 +41,10 @@ var assessment_general_status = ''; // overall Image depiction
 var imageLyr; // Pointer
 var imageThumbnailLyr; // Pointer
 var imageRetryAttempt = 0;
+var loadHiResDelay = 500; // wait 500ms before accepting next request to load hiRes image
+var loadHiResReady = true;
+var loadHiResTimeout;
+var queuedHiRes = "";
 var damage_markers = { // Marker = Severity: 'hex color'
 	"affected": '#ffffcc',
 	"minor": '#ffc000',
@@ -91,7 +95,6 @@ function add_image_to_history(image) { // Call after imageLyr and assessment_fea
 		submitted: false
 	};
 	image_history.push(imageObj);
-	console.log("image_history", image_history);
 	return imageObj;
 }
 
@@ -400,6 +403,17 @@ function previous_image() {
 	}
 }
 
+function retryImage() {
+	image_history.pop();
+	if (imageRetryAttempt++ < IMG_RETRY_MAX_ATTEMPTS) {
+		next_image();
+	} else {
+		alert("Image Server is currently experiencing difficulties. Please try again later.\n" +
+			"If you continue to experience difficulties, please contact the site admin.\n\n"
+		);
+	}
+}
+
 function save_status(data, imageObj) {
 	console.log(data);
 	if (data.status === "succeeded") imageObj.submitted = true;
@@ -454,17 +468,34 @@ function set_overview_image(image) {
 }
 
 function set_review_image(imageObj, isHistory) {
+	var failed = false,
+		overviewLoaded = false;
 	if (assessment_features) assessment_features.remove();
 	if (imageThumbnailLyr) {
 		map.removeLayer(imageThumbnailLyr);
 		imageThumbnailLyr.remove();
 	}
-	//if (imageLyr) {
-	//    map.removeLayer(imageLyr);
-	//    imageLyr.remove();
-	//}
+	if (imageLyr) {
+		map.removeLayer(imageLyr);
+		imageLyr.remove();
+	}
 	map.setView(IMG_CENTER, IMG_ZOOM);
-	imageThumbnailLyr = L.imageOverlay(imageObj.image["thumbnailurl"], bounds).addTo(map);
+	loadThumbnail();
+	if (loadHiResReady) {
+		loadHiResReady = false;
+		loadHiRes();
+		loadHiResTimeout = setTimeout(function () {
+			loadHiResReady = true;
+		}, loadHiResDelay);
+	} else {
+		clearTimeout(loadHiResTimeout);
+		queuedHiRes = imageObj.image["imageurl"];
+		loadHiResTimeout = setTimeout(function () {
+			loadHiResReady = true;
+			loadHiResTimeout = "";
+			loadHiRes(); // should fire with whatever the current hiRes image is
+		}, loadHiResDelay);
+	}
 	if (!isHistory) {
 		imageObj.assessment_features = new L.FeatureGroup();
 	}
@@ -473,40 +504,51 @@ function set_review_image(imageObj, isHistory) {
 	if (drawControl) map.removeControl(drawControl);
 	if (!imageObj.submitted) build_leaflet_draw_toolbar(map, assessment_features);
 	update_nav(imageObj, isHistory)
-	imageThumbnailLyr.on("load", function () {
-		if (imageLyr) {
-			map.removeLayer(imageLyr);
-			imageLyr.remove();
-		}
-		set_overview_image(imageObj.image);
-		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
-		imageObj.imageLyr = imageLyr;
-		imageLyr.on("load", function () {
-			imageThumbnailLyr.remove();
+
+	function loadThumbnail() {
+		imageThumbnailLyr = L.imageOverlay(imageObj.image["thumbnailurl"], bounds).addTo(map);
+		imageThumbnailLyr.on("load", function () {
+			imageRetryAttempt = 0;
+			if (!overviewLoaded) {
+				set_overview_image(imageObj.image);
+				overviewLoaded = true;
+			}
+			if (imageObj.imageLyr === "") imageObj.imageLyr = imageThumbnailLyr;
+
 		});
-	});
-	imageThumbnailLyr.on("error", function () {
-		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
-		imageObj.imageLyr = imageLyr;
-		imageLyr.on("load", function () {
-			set_overview_image(imageObj.image);
-			imageThumbnailLyr.remove();
+		imageThumbnailLyr.on("error", function () {
+			if (imageThumbnailLyr) {
+				map.removeLayer(imageThumbnailLyr);
+				imageThumbnailLyr.remove();
+			}
+			failed = failed ? retryImage() : true;
 		});
-		imageLyr.on("error", function () { // neither the thumbnail nor HiRes loaded, so fetch next image and remove from history
-			image_history.pop();
+	}
+
+	function loadHiRes() {
+		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
+		imageLyr.on("load", function () {
+			imageRetryAttempt = 0;
+			clearTimeout(loadHiResTimeout);
+			if (!overviewLoaded) {
+				set_overview_image(imageObj.image);
+				overviewLoaded = true;
+			}
+			if (imageThumbnailLyr) {
+				map.removeLayer(imageThumbnailLyr);
+				imageThumbnailLyr.remove();
+			}
+			imageObj.imageLyr = imageLyr;
+		});
+		imageLyr.on("error", function () {
+			clearTimeout(loadHiResTimeout);
 			if (imageLyr) {
 				map.removeLayer(imageLyr);
 				imageLyr.remove();
 			}
-			if (imageRetryAttempt++ < IMG_RETRY_MAX_ATTEMPTS) {
-				next_image();
-			} else {
-				alert("Image Server is currently experiencing difficulties. Please try again later.\n" +
-					"If you continue to experience difficulties, please contact the site admin.\n\n"
-				);
-			}
+			failed = failed ? retryImage() : true;
 		});
-	});
+	}
 }
 
 // });
