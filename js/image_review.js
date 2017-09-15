@@ -492,6 +492,10 @@ function set_review_image(imageObj, isHistory) {
 		});
 		imageLyr.on("error", function () { // neither the thumbnail nor HiRes loaded, so fetch next image and remove from history
 			image_history.pop();
+			if (imageLyr) {
+				map.removeLayer(imageLyr);
+				imageLyr.remove();
+			}	
 			if (imageRetryAttempt++ < IMG_RETRY_MAX_ATTEMPTS) {
 				next_image();
 			} else {
