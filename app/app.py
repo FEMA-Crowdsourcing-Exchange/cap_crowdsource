@@ -80,6 +80,18 @@ class serviceAPI(object):
     @cherrypy.config(**{'tools.cors.on': True})
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    def getActiveFlights(self):
+        cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
+        cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+
+        #return "rr"
+        CAP.scanForFlights()
+        return CAP.getActiveFlights()
+
+    @cherrypy.expose
+    @cherrypy.config(**{'tools.cors.on': True})
+    @cherrypy.tools.json_out()
+    #@cherrypy.tools.json_in()
     def releaseFlightToReview(self, **kwargs):
         cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
         cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
@@ -93,21 +105,7 @@ class serviceAPI(object):
     @cherrypy.expose
     @cherrypy.config(**{'tools.cors.on': True})
     @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
-    def releaseFlightToReview(self, **kwargs):
-        cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
-        cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
-        
-        cl = cherrypy.request.headers['Content-Length']
-        rawbody = cherrypy.request.body.read(int(cl))
-        data = json.loads(rawbody)
-        
-        return CAP.releaseFlightToReview(data["missionId"])
-
-    @cherrypy.expose
-    @cherrypy.config(**{'tools.cors.on': True})
-    @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
+    #@cherrypy.tools.json_in()
     def closeFlight(self, **kwargs):
         cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
         cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
@@ -116,12 +114,12 @@ class serviceAPI(object):
         rawbody = cherrypy.request.body.read(int(cl))
         data = json.loads(rawbody)
         
-        return CAP.releaseFlightToReview(data["missionId"])
+        return CAP.closeFlight(data["missionId"])
 
     @cherrypy.expose
     @cherrypy.config(**{'tools.cors.on': True})
     @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
+    #@cherrypy.tools.json_in()
     def reopenFlight(self, **kwargs):
         cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
         cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
@@ -130,7 +128,7 @@ class serviceAPI(object):
         rawbody = cherrypy.request.body.read(int(cl))
         data = json.loads(rawbody)
         
-        return CAP.releaseFlightToReview(data["missionId"])
+        return CAP.reopenFligh(data["missionId"])
 
 class API(object):
     @cherrypy.expose
