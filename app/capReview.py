@@ -64,7 +64,7 @@ class imgDB():
 
         # set the image status to in progress
         c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP , status = CASE WHEN reviews >= %d THEN 'c' ELSE 'p' END,
-              , reviews = reviews + 1 WHERE id = '%s' """ %((self.tgtReviews -1 ), data["imageId"]))
+              reviews = reviews + 1 WHERE id = '%s' """ %((self.tgtReviews -1 ), data["imageId"]))
         db.commit()
         
         return True
