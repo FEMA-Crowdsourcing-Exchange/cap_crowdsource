@@ -109,10 +109,10 @@ function apply_image_info_wrapper(data) {
 
 	if (current_image && "id" in current_image) {
 		imageID = current_image["id"];
-		missionId = current_image["imagemissionid"];
-		set_info("#eventname", current_image["imageeventname"]);
-		set_info("#missionname", current_image["imagemissionname"]);
-		set_info("#teamname", current_image["imageteamname"]);
+		missionId = current_image["imageMissionId"];
+		set_info("#eventname", current_image["imageEventName"]);
+		set_info("#missionname", current_image["imageMissionName"]);
+		set_info("#teamname", current_image["imageTeamName"]);
 		set_info("#photo_date", convert_mssql_date(current_image["exifphotodate"]));
 		set_info("#photo_altitude", current_image["altitude"]);
 
