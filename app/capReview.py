@@ -64,7 +64,7 @@ class imgDB():
 
         # set the image status to in progress
         c.execute("""UPDATE review_queue SET lastReview = CURRENT_TIMESTAMP , status = CASE WHEN reviews >= %d THEN 'c' ELSE 'p' END,
-              , reviews = reviews + 1 WHERE id = '%s' """ %((self.tgtReviews -1 ), data["imageId"]))
+              reviews = reviews + 1 WHERE id = '%s' """ %((self.tgtReviews -1 ), data["imageId"]))
         db.commit()
         
         return True
@@ -111,6 +111,22 @@ class imgDB():
         r["uploaddate"] = str(r["uploaddate"])
         return r
 
+    def getActiveFlights(self):
+        db = self.getConn()
+        c = db.cursor()
+        c.execute("""UPDATE mission_review_status SET reviewed_images = (SELECT count(*) FROM review_queue r 
+              WHERE r.status in ('p','c') and
+                  r.imageMissionId = mission_review_status.imagemissionid);""")
+        db.commit()
+        c.execute("""SELECT imageMissionId, 
+              imageeventname, imageteamname, imagemissionname, images, reviewed_images, review_status, 
+                LEFT(CONVERT(VARCHAR, review_start, 120), 10) as review_start
+            FROM mission_review_status
+            WHERE review_status = 'A'
+            ORDER BY imageeventname, imageteamname, imagemissionname;""")
+        r = c.fetchall()
+        return r
+
     def getFlights(self):
         db = self.getConn()
         c = db.cursor()
@@ -118,8 +134,9 @@ class imgDB():
               WHERE r.status in ('p','c') and
                   r.imageMissionId = mission_review_status.imagemissionid);""")
         db.commit()
-        c.execute("""INSERT INTO mission_review_status (imageMissionId, 
-            imageeventname, imageteamname, imagemissionname, images, reviewed_images, review_status, review_start
+        c.execute("""SELECT imageMissionId, 
+              imageeventname, imageteamname, imagemissionname, images, reviewed_images, review_status, 
+                LEFT(CONVERT(VARCHAR, review_start, 120), 10) as review_start
             FROM mission_review_status
             ORDER BY imageeventname, imageteamname, imagemissionname;""")
         r = c.fetchall()
@@ -131,7 +148,7 @@ class imgDB():
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
                 SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, '', CURRENT_TIMESTAMP
-                    FROM  %s.imageeventImages im
+                    FROM %s.imageeventImages im
                     WHERE 
                         im.latitude > 0 and
                         im.imageeventid in (9073, 9074) and
