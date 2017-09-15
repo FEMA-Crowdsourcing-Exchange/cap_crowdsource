@@ -326,6 +326,7 @@ function init_map() {
 }
 
 function init_overview_map() {
+	set_training_modal();
 	overview_map = L.map("overview_map").setView([39, -97.5], 4);
 	L.esri.basemapLayer("Imagery").addTo(overview_map);
 	overview_features = new L.FeatureGroup();
@@ -563,6 +564,16 @@ function set_btn_visability(id, show) {
 			btn.addClass("hide disabled").prop("disabled", true);
 		}
 	}
+}
+
+function set_training_modal() {
+	$("a#imageAnalysisTrainingLink").click(function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		$("#myModal").modal({
+			"remote": "templates/imageAnalysisTrainingModal.html"
+		});
+	});
 }
 
 function skip_image() {
