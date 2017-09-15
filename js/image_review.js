@@ -1,15 +1,10 @@
 // image_review.js
 /*********** 
 * TODO: 
-- Create "buildPayload" function for 'save' (Will need Session ID, timestamp, and Token)
-- Use payload archive to enable 'Previous Image' functionality
 - Create tooltip for each btn_DamageMarker
-- Cancel imageOverlay load upon "previous", "next", or "submit"
-- Set overview zoom based on altitude
 - Read in variables from js file for urls
 - Enable users marking overview map to georectify image to map; 2x locations each
 - Allow users to submit comments with their assessment
-- Skip images without lat/lng
 
 * QUESTIONS:
 - Should users comment per marker or per image?
@@ -29,7 +24,6 @@ var IMG_CENTER = [-IMG_DEFAULT_SIZE[3] / 4, IMG_DEFAULT_SIZE[2] / 4];
 var IMG_CENTER;
 var IMG_RETRY_MAX_ATTEMPTS = 8;
 var Icons = create_icons();
-var eventId;
 var imageID;
 var missionId;
 var image_history = [];
@@ -221,7 +215,7 @@ function buildPayload(imageObj) {
 		dataType: 'json',
 		contentType: 'application/json',
 		crossDomain: true
-	}).success(function(data) {
+	}).success(function (data) {
 		save_status(data, imageObj);
 	});
 }
@@ -326,7 +320,6 @@ function init_map() {
 	}
 	init_review_map();
 	init_overview_map();
-	eventId = "9073";
 	next_image();
 }
 
@@ -375,7 +368,6 @@ function next_image() {
 		if (xhr && xhr.readyState != 4) {
 			xhr.abort();
 		}
-		console.log("APP_URL", APP_URL);
 		xhr = $.ajax({
 			url: APP_URL + "api/Image",
 			processData: false,
@@ -383,14 +375,12 @@ function next_image() {
 			headers: {
 				'X-Requested-With': 'XMLHttpRequest'
 			}
-		}).success(function(data) {
-			console.log("data", data);
-			next_image_wrapper(data);
-		});
+		}).success(next_image_wrapper);
 	}
 }
 
 function next_image_wrapper(data) {
+
 	image_index = image_history.length;
 	if (image_history.length) enabled_button("previous_image");
 	apply_image_info(add_image_to_history(data));
@@ -412,7 +402,7 @@ function previous_image() {
 
 function save_status(data, imageObj) {
 	console.log(data);
-	if(data.status === "succeeded") imageObj.submitted = true;	
+	if (data.status === "succeeded") imageObj.submitted = true;
 	next_image();
 }
 
@@ -443,8 +433,16 @@ function set_markertool(severity) {
 }
 
 function set_overview_image(image) {
+	var lat = parseFloat(image["latitude"]),
+		lng = parseFloat(image["longitude"]);
+	if (isNaN(lat) || isNaN(lng) || lat < -85 || lat > 85 || lng < -180 || lng > 180) {
+		console.log("Invalid lat/lng, skipping to next image");
+		image_history.pop();
+		next_image();
+		return;
+	}
 	overview_features.clearLayers();
-	var marker = L.marker([parseFloat(image["latitude"]), parseFloat(image["longitude"])], {
+	var marker = L.marker([lat, lng], {
 		icon: Icons['camera']
 	})
 	overview_features.addLayer(marker);
@@ -458,13 +456,13 @@ function set_overview_image(image) {
 function set_review_image(imageObj, isHistory) {
 	if (assessment_features) assessment_features.remove();
 	if (imageThumbnailLyr) {
-        map.removeLayer(imageThumbnailLyr);
-        imageThumbnailLyr.remove();
-    }
+		map.removeLayer(imageThumbnailLyr);
+		imageThumbnailLyr.remove();
+	}
 	//if (imageLyr) {
-    //    map.removeLayer(imageLyr);
-    //    imageLyr.remove();
-    //}
+	//    map.removeLayer(imageLyr);
+	//    imageLyr.remove();
+	//}
 	map.setView(IMG_CENTER, IMG_ZOOM);
 	imageThumbnailLyr = L.imageOverlay(imageObj.image["thumbnailurl"], bounds).addTo(map);
 	if (!isHistory) {
@@ -476,10 +474,10 @@ function set_review_image(imageObj, isHistory) {
 	if (!imageObj.submitted) build_leaflet_draw_toolbar(map, assessment_features);
 	update_nav(imageObj, isHistory)
 	imageThumbnailLyr.on("load", function () {
-        if (imageLyr) {
-            map.removeLayer(imageLyr);
-            imageLyr.remove();
-        }
+		if (imageLyr) {
+			map.removeLayer(imageLyr);
+			imageLyr.remove();
+		}
 		set_overview_image(imageObj.image);
 		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageObj.imageLyr = imageLyr;
@@ -499,7 +497,7 @@ function set_review_image(imageObj, isHistory) {
 			if (imageLyr) {
 				map.removeLayer(imageLyr);
 				imageLyr.remove();
-			}	
+			}
 			if (imageRetryAttempt++ < IMG_RETRY_MAX_ATTEMPTS) {
 				next_image();
 			} else {
