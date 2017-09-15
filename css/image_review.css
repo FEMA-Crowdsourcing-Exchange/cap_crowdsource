@@ -160,19 +160,19 @@ div#review_tools div.btn.tool_spn.removeMarkers {
 	background-color: #9966ff;
 }
 
-.affected_spn:hover {
+div.btn.affected_spn:hover {
 	background-color: #FFFFE6;
 }
 
-.minor_spn:hover {
+div.btn.minor_spn:hover {
 	background-color: #FFDA1A;
 }
 
-.major_spn:hover {
+div.btn.major_spn:hover {
 	background-color: #FFAFB3;
 }
 
-.destroyed_spn:hover {
+div.btn.destroyed_spn:hover {
 	background-color: #CC99FF;
 }
 

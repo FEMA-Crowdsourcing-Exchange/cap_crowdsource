@@ -613,7 +613,7 @@ function build_damage_marker_tooltips() {
 			"INUNDATION_ASSESSMENTS": {
 				"affected": "Field Verified Flood Depth (or Storm Surge): >0 to 2 feet relative to the ground surface at structure.  Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments",
 				"minor": "Field Verified Flood Depth  (or Storm Surge): 2 to 5 feet relative to the ground surface at structure. Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments",
-				"major": "Field Verified Flood Depth: Greater than 5 feet, modeling observed, relative to the ground surface at structure, and not high rise construction. Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments.<br>Major is the general category where the onset of Substantial Damage (>50% of building value) as defined by the National Flood Insurance Program (NFIP) may occur.",
+				"major": "Field Verified Flood Depth: Greater than 5 feet, modeling observed, relative to the ground surface at structure, and not high rise construction. Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments.<br><b><sup>**</sup>Major is the general category where the onset of Substantial Damage (>50% of building value) as defined by the National Flood Insurance Program (NFIP) may occur.</b>",
 				"destroyed": "Structures have been completely destroyed or washed away by surge effects."
 			},
 			"Wind": {
@@ -649,7 +649,7 @@ function build_damage_marker_tooltips() {
 			$(this).html(templates[type][index]);
 		});
 		modal.find('p#INUNDATION_ASSESSMENTS').html("<b>INUNDATION ASSESSMENT:</b> " + classificationText.INUNDATION_ASSESSMENTS[type]);
-
+		modal.find('div.modal-content>div.modal-body>table.tooltipModalTable').css("background-color", damage_markers[type]);
 		modal.modal();
 	});
 }
