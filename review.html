@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
     <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="js/polyfill_str.includes.js"></script>
+    
     <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- Load Leaflet from CDN -->
@@ -42,7 +44,7 @@
         <div class="damage_content col-xs-12 col-md-5 col-xl-2">
             <div class="damage_assess_container col-sm-7 col-md-12">
                 <h3 class="header">Mark the Image with Damage Assessments</h3>
-                <a data-toggle="modal" id="imageAnalysisTrainingLink" href="templates/imageAnalysisTrainingModal.html" data-target="#myModal">FEMA: Image Analysis Training</a>
+                <a id="imageAnalysisTrainingLink" href="data/Image_Analysis_Training(optimized).pdf" target="_blank">FEMA: Image Analysis Training</a>
                 <div id="review_tools" class="col-xs-7 col-md-12">
                     <div class="damage_markers col-xs-6">
                         <div class="btn btn-block radio affected_spn tool_spn">
@@ -84,28 +86,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Modal title</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="te"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
-            </div>
-            <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-    </div>
-    <!-- /.modal -->
 </body>
 
 </html>

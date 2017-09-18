@@ -1,10 +1,10 @@
 // image_review.js
 /*********** 
 * TODO: 
-- Create tooltip for each btn_DamageMarker
-- Read in variables from js file for urls
-- Enable users marking overview map to georectify image to map; 2x locations each
+- Style tooltip for each btn_DamageMarker
+- Darken Markers
 - Allow users to submit comments with their assessment
+- Enable users marking overview map to georectify image to map; 2x locations each
 
 * QUESTIONS:
 - Should users comment per marker or per image?
@@ -44,11 +44,10 @@ var imageRetryAttempt = 0;
 var loadHiResDelay = 500; // wait 500ms before accepting next request to load hiRes image
 var loadHiResReady = true;
 var loadHiResTimeout;
-var queuedHiRes = "";
 var damage_markers = { // Marker = Severity: 'hex color'
 	"affected": '#ffffcc',
 	"minor": '#ffc000',
-	"major": '#ff7c80',
+	"major": '#FF4D4D',
 	"destroyed": '#9966ff'
 };
 var set_drawing_options; // exposing function globally
@@ -59,21 +58,23 @@ activate();
 // Functions
 
 function activate() {
+	$.get('/templates/modal.html', function (template) {
+		$(template).appendTo('body');
+		if (!check_protocol()) {
+			$("#myModal").modal({
+				"remote": "templates/redirectModal.html"
+			});
+			return;
+		}
+	});
+	$.get('/templates/tooltipModal.html', function (template) {
+		$(template).appendTo('body');
+		build_damage_marker_tooltips();
+	});
 	$.ajaxPrefilter(function (options) {
 		if (options.crossDomain && window.location.host === "localhost:8888") {
-			// var newData = {};
-			// // Copy the options.data object to the newData.data property.
-			// // We need to do this because javascript doesn't deep-copy variables by default.
-			// newData.data = $.extend({}, options.data);
-			// newData.url = options.url;
-
-			// Reset the options object - we'll re-populate in the following lines.
-			// options = {};
-
 			// Set the proxy URL
 			if (options.url[0] === "/") options.url = "http://127.0.0.1:8888" + options.url;
-
-			// options.data = $.param(newData);
 		} else {
 			options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
 		}
@@ -109,10 +110,10 @@ function apply_image_info_wrapper(data) {
 
 	if (current_image && "id" in current_image) {
 		imageID = current_image["id"];
-		missionId = current_image["imagemissionid"];
-		set_info("#eventname", current_image["imageeventname"]);
-		set_info("#missionname", current_image["imagemissionname"]);
-		set_info("#teamname", current_image["imageteamname"]);
+		missionId = current_image["imageMissionId"];
+		set_info("#eventname", current_image["imageEventName"]);
+		set_info("#missionname", current_image["imageMissionName"]);
+		set_info("#teamname", current_image["imageTeamName"]);
 		set_info("#photo_date", convert_mssql_date(current_image["exifphotodate"]));
 		set_info("#photo_altitude", current_image["altitude"]);
 
@@ -315,12 +316,7 @@ function image_history_next() {
 }
 
 function init_map() {
-	if (!check_protocol()) {
-		$("#myModal").modal({
-			"remote": "templates/redirectModal.html"
-		});
-		return;
-	}
+	set_training_modal();
 	init_review_map();
 	init_overview_map();
 	next_image();
@@ -442,7 +438,7 @@ function set_markertool(severity) {
 	} else {
 		$("input[name=btn_GeneralMarker][value=non-impct]").prop("checked", true);
 		assessment_features.clearLayers();
-		// $('a[title="Cancel drawing"]').click();	// Doesn't work		
+		// $('a[title="Cancel drawing"]').click(); // Doesn't work 
 	}
 }
 
@@ -489,7 +485,6 @@ function set_review_image(imageObj, isHistory) {
 		}, loadHiResDelay);
 	} else {
 		clearTimeout(loadHiResTimeout);
-		queuedHiRes = imageObj.image["imageurl"];
 		loadHiResTimeout = setTimeout(function () {
 			loadHiResReady = true;
 			loadHiResTimeout = "";
@@ -529,7 +524,7 @@ function set_review_image(imageObj, isHistory) {
 		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
 		imageLyr.on("load", function () {
 			imageRetryAttempt = 0;
-			clearTimeout(loadHiResTimeout);
+			loadHiResReady = true;
 			if (!overviewLoaded) {
 				set_overview_image(imageObj.image);
 				overviewLoaded = true;
@@ -541,7 +536,7 @@ function set_review_image(imageObj, isHistory) {
 			imageObj.imageLyr = imageLyr;
 		});
 		imageLyr.on("error", function () {
-			clearTimeout(loadHiResTimeout);
+			loadHiResReady = true;
 			if (imageLyr) {
 				map.removeLayer(imageLyr);
 				imageLyr.remove();
@@ -550,11 +545,6 @@ function set_review_image(imageObj, isHistory) {
 		});
 	}
 }
-
-// });
-// merge lint
-//	set_overview_image(image);
-//}
 
 function set_btn_visability(id, show) {
 	var btn = $("button#" + id);
@@ -567,8 +557,24 @@ function set_btn_visability(id, show) {
 	}
 }
 
+function set_training_modal() {
+	$("a#imageAnalysisTrainingLink").click(function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		$("#myModal").modal({
+			"remote": "templates/imageAnalysisTrainingModal.html"
+		});
+	});
+}
+
 function skip_image() {
 	next_image();
+}
+
+function toTitleCase(str) {
+	return str.replace(/\w\S*/g, function (txt) {
+		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+	});
 }
 
 function update_nav(imageObj, isHistory) {
@@ -582,4 +588,68 @@ function update_nav(imageObj, isHistory) {
 	buttons.forEach(function (btn) {
 		set_btn_visability(btn[0], btn[1]);
 	}, this);
+}
+
+function build_damage_marker_tooltips() {
+	var classificationText = {
+			"Earthquake": {
+				"affected": ['Some damage to the structure and contents, but still habitable. Small plaster cracks at corners of door and window openings and wall-ceiling intersections; small cracks in masonry chimneys and masonry veneers. Small cracks are assumed to be visible with a maximum width of less than 1/8 inch (cracks wider than 1/8 inch are referred to as "large" cracks).', 'None', 'None', 'None', 'Very little or no damage is observed from visible imagery. May be "Green Tagged" as Inspected using ATC-20 criteria by local building officials or qualified engineer allowing entry into the building.', 'Available IA inspection indicated Full Verified Loss (FVL) of greater than $0 and less than $5,000.'],
+				"minor": ['Home is damaged and uninhabitable, but may be made habitable in short period of time with repairs. Large plaster or gypsum-board cracks at corners of door and window openings; small diagonal cracks across shear wall panels exhibited by small cracks in stucco and gypsum wall panels; large cracks in brick chimneys; toppling of tall masonry chimneys.', 'None', 'None', 'None', 'Occasional (<20%) brick chimney, parapet are veneer damage may be observed in visible imagery. May be "Green Tagged" as Inspected using ATC-20 criteria by local building officials or qualified engineer allowing entry into the building.', 'Available IA inspection indicated Full Verified Loss (FVL) of greater than $5,000 and less than $17,000.'],
+				"major": ['Substantial failure to structural elements of residence (e.g., walls, floors, foundation), dwelling is uninhabitable and requires extensive repairs. The dwelling is unusable in its current condition and cannot be made habitable in a short period of time. Extensive structural damage and/or partial collapse. Partial collapse of exterior bearing walls. Large diagonal cracks across shear wall panels or large cracks at plywood joints; permanent lateral movement of floors and roof; toppling of most brick chimneys; cracks in foundations; splitting of wood sill plates and/or slippage of structure over foundations.', 'Occasionally (<20%) observed in visible imagery.', 'Occasionally (<20%) observed in visible imagery.', 'Onset of structural damage. Partial collapse of some exterior walls.', 'More frequent (>20%) non structural brick chimney, parapet are veneer damage may be observed in visible imagery.  May be "Yellow Tagged" as Restricted Entry using ATC-20 criteria by local building officials or qualified engineer restricting entry into the building.', 'Available IA inspection indicated Full Verified Loss (FVL) of greater than $17,000.'],
+				"destroyed": ['Total loss of structure, structure is not economically feasible to repair, or complete failure of two or more major structural components (e.g., collapse of basement walls/foundation, walls or roof). Structure may have large permanent lateral displacement or be in imminent danger of collapse due to cripple wall failure or failure of the lateral load resisting system; some structures may slip and fall of the foundation; large foundation cracks. Based on building type 3% (wood-frame) to 15% (masonry) of the total area of buildings with this level of damage is expected to be collapsed, on average.', 'More frequently (>20%) observed in visible imagery.', 'More frequently (>20%) observed in visible imagery.', '3 to 15% of exterior walls collapse, and are threat to collapse in aftershocks.', 'Likely to be "Red Tagged" as Unsafe using ATC-20 criteria by local building officials or qualified engineer preventing entry into building.', 'Available IA inspection flagged the structure as "Destroyed".  Many of these buildings may not meet the IA inspection criteria for Destroyed of "most exterior wall collapsed", however, they will likely be complete economic losses and significant ongoing collapse hazards during aftershocks.']
+			},
+			"Fire": {
+				"affected": ['Some damage to the structure and contents, but still habitable.', 'Generally superficial damage. Structures have been exposed to fire but are not destroyed.', 'Up to 20%', 'None', 'None', 'Roofing materials may buckle, partially melt, or burn. This could cause leaks.  Depending on the siding material, it may warp, melt or burn. Paint may be damaged.', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $0 and less than $5,000.'],
+				"minor": ['Home is damaged and uninhabitable, but may be made habitable in short period of time with repairs.', 'Few structures are burned/destroyed', '>20%', 'Up to 20%', 'None', 'Windows and doorframes may warp and weather stripping may be damaged. Windows may break.', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $5,000 and less than $17,000.'],
+				"major": ['Substantial failure to structural elements of residence (e.g., walls, floors, foundation), dwelling is uninhabitable and requires extensive repairs. The dwelling is unusable in its current condition and cannot be made habitable in a short period of time.', 'Some structures are completely burned/destroyed most sustain observable exterior damage (interior walls exposed)', '>20%', '>20%', 'Some exterior walls are collapsed.', 'Roofs and floors may have sustained structural damage if the house is partially burned.', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $17,000.'],
+				"destroyed": ['Total loss of structure, structure is not economically feasible to repair, or complete failure of two or more major structural components, may be burned to foundation.', 'Most structures are completely burned/destroyed', '>20%', '>20%', 'Majority of the exterior walls are collapsed', 'Available IA inspection flagged the structure as "Destroyed".']
+			},
+			"Inundation": {
+				"affected": ['Some damage to the structure and contents, but still habitable.', 'Generally superficial damage to solid structures (loss of tiles or roof shingles); some mobile homes and light structures damaged or displaced.', 'Up to 20%', 'None', 'None', 'Gutters and/or awning; loss of vinyl or metal siding.', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $0 and less than $5,000.'],
+				"minor": ['Home is damaged and uninhabitable, but may be made habitable in short period of time with repairs.', 'Solid structures sustain exterior damage (e.g., missing roofs or roof segments); some mobile homes and light structures are destroyed, many are damaged or displaced.', '>20% ', 'Up to 20%', 'None', 'Garage doors collapse inward; failure of porch or carport', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $5,000 and less than $17,000.'],
+				"major": ['Substantial failure to structural elements of residence (e.g., walls, floors, foundation), dwelling is uninhabitable and requires extensive repairs. The dwelling is unusable in its current condition and cannot be made habitable in a short period of time.', 'Some solid structures are destroyed; most sustain exterior and interior damage (roofs missing, interior walls exposed); most mobile homes and light structures are destroyed.<hr>Storm Surge: Extensive structural damage and/or partial collapse due to surge effects. Partial collapse of exterior bearing walls.', '>20%', '>20%', 'Some exterior walls are collapsed.', 'Mobile home could be completely off foundation – if appears to be repairable. Collapse of chimney', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $17,000.'],
+				"destroyed": ['Total loss of structure, structure is not economically feasible to repair, or complete failure of two or more major structural components, may be burned to foundation.', 'Most structures are completely burned/destroyed<hr>Storm Surge: Structures have been completely destroyed or washed away by surge effects', '>20%', '>20%', 'Majority of the exterior walls are collapsed', '', 'Available IA inspection flagged the structure as "Destroyed".']
+			},
+			"INUNDATION_ASSESSMENTS": {
+				"affected": "Field Verified Flood Depth (or Storm Surge): >0 to 2 feet relative to the ground surface at structure.  Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments",
+				"minor": "Field Verified Flood Depth  (or Storm Surge): 2 to 5 feet relative to the ground surface at structure. Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments",
+				"major": "Field Verified Flood Depth: Greater than 5 feet, modeling observed, relative to the ground surface at structure, and not high rise construction. Depth damage relationships may vary based on building or foundation type, as well as duration or velocity of flood event. Depths may be adjusted for particular events based on preliminary assessments and recommendations from IA, as well as other imagery based damage assessments.<br><b><sup>**</sup>Major is the general category where the onset of Substantial Damage (>50% of building value) as defined by the National Flood Insurance Program (NFIP) may occur.</b>",
+				"destroyed": "Structures have been completely destroyed or washed away by surge effects."
+			},
+			"Wind": {
+				"affected": ['Some damage to the structure and contents, but still habitable.', 'Generally superficial damage to solid structures (loss of tiles or roof shingles)', 'Up to 20%', 'None', 'None', 'Gutters and/or awning; loss of vinyl or metal siding. Garage doors collapse inward; failure of porch or carport', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $0 and less than $5,000.'],
+				"minor": ['Home is damaged and uninhabitable, but may be made habitable in short period of time with repairs.', 'Solid structures sustain exterior damage (e.g., missing roofs or roof segments); ', '>20% ', 'Up to 20%', 'None', 'Nonstructural damage to exterior, roof components, damage to chimney to include tilting, fallen, cracks ', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $5,000 and less than $17,000.'],
+				"major": ['Substantial failure to structural elements of residence (e.g., walls, floors, foundation), dwelling is uninhabitable and requires extensive repairs. The dwelling is unusable in its current condition and cannot be made habitable in a short period of time', 'Some solid structures are destroyed; most sustain exterior and interior damage (roofs missing, interior walls exposed); most mobile homes and light structures are destroyed.', '>20%', '>20%', 'Some exterior walls are collapsed.', 'Major damage to structural elements of roof, walls, or foundation to include crumbling, bulging, collapsing. Shifting of residence on foundation more than six inches.', 'Available IA inspection indicated FEMA Verified Loss (FVL) of greater than $17,000.'],
+				"destroyed": ['Total loss of structure, structure is not economically feasible to repair, or complete failure of two or more major structural components (e.g., collapse of basement walls/foundation, walls or roof).', 'Most solid and all light or mobile home structures destroyed.', '>20%', '>20%', 'Majority of the exterior walls are collapsed.', 'Total collapse of walls or roof', 'Available IA inspection flagged the structure as "Destroyed".']
+			}
+		},
+		rowOrder = ["Wind", "Inundation", "Fire", "Earthquake"],
+		templates = {};
+
+	Object.keys(damage_markers).forEach(function (marker) {
+		templates[marker] = rowOrder.map(function (element) {
+			return build_row_template(marker, element);
+		});
+	}, this);
+
+	function build_row_template(type, header) {
+		return "<th>" + header + "</th><td" + (header === "Earthquake" ? ' class="span" colspan="2" scope="col"' : "") + ">" + classificationText[header][type].join("</td><td>") + "</td>";
+	}
+
+	$('div.damage_markers a[data-toggle="tooltip"]').tooltip({
+		container: "div.damage_markers",
+		placement: "top"
+	}).click(function (e) {
+		e.stopPropagation();
+		e.preventDefault();
+		var modal = $("#tooltipModal"),
+			type = e.currentTarget.dataset.type;
+		modal.find('table.tooltipModalTable').removeClass("affected minor major destroyed").addClass(type);
+		modal.find('.modal-title').text('"' + toTitleCase(type) + '" Damage Classification Chart');
+		modal.find('tr.assessmentText').each(function (index) {
+			$(this).html(templates[type][index]);
+		});
+		modal.find('p#INUNDATION_ASSESSMENTS').html("<b>INUNDATION ASSESSMENT:</b> " + classificationText.INUNDATION_ASSESSMENTS[type]);
+		modal.modal();
+	});
 }
