@@ -75,6 +75,37 @@ class imgDB():
             p = self.saveAssessment(assessment)
         return p
 
+    def previewImages(self):
+        r = {}
+        db = self.getConn()
+        c = db.cursor()
+
+        # only server allowed images
+        if self.dbName == "MS SQL":
+            mssql_limit = "TOP 20"
+            sqlite_limit = ""
+        else:
+            mssql_limit = ""
+            sqlite_limit = "LIMIT 1"
+
+        c.execute("""SELECT %s id, imageurl, thumbnailurl, uploaddate, altitude, latitude, longitude, 
+                exifphotodate, exifcameraMaker, exifcameramodel, exiffocallength,
+                imagemissionId, imageeventname, imageteamname, imagemissionname
+            FROM  review_queue
+            WHERE reviews < %d and
+              status in ('i','p')
+            ORDER BY lastReview
+            %s;""" %(mssql_limit, self.tgtReviews, sqlite_limit))
+        r = c.fetchall()
+        if len(r) == 0:
+            # return a dummy list of images
+            r = [{}]
+
+        # force an MSSQL raw date type to the ISO form
+        r["exifphotodate"] = str(r["exifphotodate"])
+        r["uploaddate"] = str(r["uploaddate"])
+        return r
+
     def nextImage(self):
         r = {}
         db = self.getConn()
@@ -171,8 +202,8 @@ class imgDB():
                 FROM %s.imageeventImages im
                 WHERE im.imagemissionId = %d and
                     im.latitude > 0 and
-                    NOT EXISTS (SELECT 1 FROM mission_review_status mrs 
-                            WHERE imageMissionId = im.imageMissionId);"""%(self.coreCapDB, missionId))
+                    NOT EXISTS (SELECT 1 FROM review_queue mrs 
+                            WHERE mrs.id = im.id);"""%(self.coreCapDB, missionId))
         c.execute("""INSERT INTO mission_review_status (imageMissionId, 
             imageEventName, imageTeamName, imageMissionName, images, reviewed_images, review_status, review_start)
                 SELECT  imageMissionId, imageEventName, imageTeamName, imageMissionName, count(*), 0, 'A', CURRENT_TIMESTAMP
@@ -195,7 +226,7 @@ class imgDB():
         c = db.cursor()
         c.execute("""UPDATE review_queue SET status = 'd'
                     WHERE imageMissionId = %d and
-                      status in ('i','p')' """%(missionId))
+                      status in ('i','p') """%(missionId))
         c.execute("""UPDATE mission_review_status SET review_status = 'X'
                     WHERE imageMissionId = %d"""%(missionId))
         db.commit()

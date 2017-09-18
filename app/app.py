@@ -38,6 +38,16 @@ class serviceAPI(object):
         #return "rr"
         return CAP.nextImage()
 
+    @cherrypy.expose
+    @cherrypy.config(**{'tools.cors.on': True})
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def ImageSet(self):
+        cherrypy.response.headers['Content-Type'] = "application/json;  charset=utf-8" 
+        cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+        #return "rr"
+        return CAP.previewImages()
+
     # allow:
     #  application/x-www-form-urlencoded;
     @cherrypy.expose

@@ -2,7 +2,7 @@
 use ImageReviews;
 GO
 
-DROP TABLE review_queue;
+-- DROP TABLE review_queue;
 GO
 CREATE TABLE review_queue (
     id  VARCHAR(40) primary key,
@@ -30,7 +30,7 @@ CREATE INDEX review_queue__lastReview__ind on review_queue(lastReview);
 CREATE INDEX review_queue__reviews__ind on review_queue(reviews);
 GO
 
-DROP TABLE assessment;
+-- DROP TABLE assessment;
 GO
 CREATE TABLE assessment (
     assessment_id  INTEGER NOT NULL IDENTITY (1,1) PRIMARY KEY,
@@ -39,13 +39,14 @@ CREATE TABLE assessment (
     session_id   VARCHAR(50),
     ip_address  VARCHAR(25),
     assessment_time     DATETIME DEFAULT CURRENT_TIMESTAMP,
-    data    VARCHAR(5500),
+    data    VARCHAR(max),
     general_status  VARCHAR(50)
 );
 CREATE INDEX assessment__id__ind on assessment(id);
 GO
 
-DROP TABLE review_status;
+
+-- DROP TABLE review_status;
 GO
 CREATE TABLE review_status (
     id  VARCHAR(40) NOT NULL PRIMARY KEY,
@@ -53,7 +54,7 @@ CREATE TABLE review_status (
 );
 GO
 
-DROP TABLE mission_review_status;
+-- DROP TABLE mission_review_status;
 GO
 CREATE TABLE mission_review_status (
     imageMissionId  INTEGER NOT NULL PRIMARY KEY,
