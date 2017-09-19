@@ -1,13 +1,17 @@
+USE ImageReviews;
+GO
+
 INSERT INTO review_queue (id, uploaddate, altitude, latitude, longitude, 
                 exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, imageMissionId, imageEventName, imageTeamName, imageMissionName,
                 imageurl, thumbnailurl, shapeWKT, status)
                 SELECT
                      id, uploaddate, altitude, latitude, longitude,
-                    exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, 
+                    coalesce(exifphotodate, CURRENT_TIMESTAMP), exifcameramodel, exifcameramaker, exiffocallength, 
                     imageMissionId, imageEventName, imageTeamName, imageMissionName, imageurl, thumbnailurl, shape.STAsText(), 'i'
                 FROM imageevents.dbo.imageeventImages im
                 WHERE im.imageeventId = 9074 and
                     im.latitude > 0 and
+                    im.exifcameramodel > '' and
                     NOT EXISTS (SELECT 1 FROM review_queue mrs 
                             WHERE mrs.id = im.id);
 GO
@@ -44,3 +48,10 @@ SELECT count(*),imagemissionid
     GROUP BY imagemissionid 
     ORDER BY imagemissionID;
 GO
+
+
+--- =========================
+
+SELECT id, review_date, count(*) as cnt FROM assessment GROUP BY id HAVING count(*) > 1;
+GO
+    

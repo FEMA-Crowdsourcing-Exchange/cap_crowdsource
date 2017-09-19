@@ -6,10 +6,24 @@ import simplejson as json
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
+        d[(col[0].lower())] = row[idx]
     return d
 
-class imgDB():
+class dbSqlite3(object):
+    def __init__(self, dbCls):
+        self.dbCls = dbCls
+
+    def connect():
+        pass
+
+class dbMssql(object):
+    def __init__(self, dbCls):
+        self.dbCls = dbCls
+
+    def connect():
+        pass
+    
+class imgDB(object):
 
     tgtReviews = 3
 
@@ -89,12 +103,12 @@ class imgDB():
             sqlite_limit = "LIMIT 1"
 
         c.execute("""SELECT %s id, imageurl, thumbnailurl, uploaddate, altitude, latitude, longitude, 
-                exifphotodate, exifcameraMaker, exifcameramodel, exiffocallength,
-                imagemissionId, imageeventname, imageteamname, imagemissionname
+                exifphotodate, exifcameramaker, exifcameramodel, exiffocallength,
+                imagemissionid, imageeventname, imageteamname, imagemissionname, lastreview
             FROM  review_queue
             WHERE reviews < %d and
               status in ('i','p')
-            ORDER BY lastReview
+            ORDER BY lastreview
             %s;""" %(mssql_limit, self.tgtReviews, sqlite_limit))
         r = c.fetchall()
         if len(r) == 0:
@@ -120,8 +134,8 @@ class imgDB():
             sqlite_limit = "LIMIT 1"
 
         c.execute("""SELECT %s id, imageurl, thumbnailurl, uploaddate, altitude, latitude, longitude, 
-                exifphotodate, exifcameraMaker, exifcameramodel, exiffocallength,
-                imagemissionId, imageeventname, imageteamname, imagemissionname
+                exifphotodate, exifcameramaker, exifcameramodel, exiffocallength,
+                imagemissionid, imageeventname, imageteamname, imagemissionname
             FROM  review_queue
             WHERE reviews < %d and
               status in ('i','p')
@@ -147,9 +161,9 @@ class imgDB():
         c = db.cursor()
         c.execute("""UPDATE mission_review_status SET reviewed_images = (SELECT count(*) FROM review_queue r 
               WHERE r.status in ('p','c') and
-                  r.imageMissionId = mission_review_status.imagemissionid);""")
+                  r.imagemissionid = mission_review_status.imagemissionid);""")
         db.commit()
-        c.execute("""SELECT imageMissionId, 
+        c.execute("""SELECT imagemissionid, 
               imageeventname, imageteamname, imagemissionname, images, reviewed_images, review_status, 
                 LEFT(CONVERT(VARCHAR, review_start, 120), 10) as review_start
             FROM mission_review_status
@@ -163,9 +177,9 @@ class imgDB():
         c = db.cursor()
         c.execute("""UPDATE mission_review_status SET reviewed_images = (SELECT count(*) FROM review_queue r 
               WHERE r.status in ('p','c') and
-                  r.imageMissionId = mission_review_status.imagemissionid);""")
+                  r.imageMissionid = mission_review_status.imagemissionid);""")
         db.commit()
-        c.execute("""SELECT imageMissionId, 
+        c.execute("""SELECT imageMissionid, 
               imageeventname, imageteamname, imagemissionname, images, reviewed_images, review_status, 
                 LEFT(CONVERT(VARCHAR, review_start, 120), 10) as review_start
             FROM mission_review_status
@@ -243,6 +257,12 @@ class imgDB():
         db.commit
         return True 
 
+    def saveIndexDb(data):
+        db = self.getConn()
+        c = db.cursor()
+        for itm in data:
+            c.execute("""""")
+            
 def main():
     pass
 
