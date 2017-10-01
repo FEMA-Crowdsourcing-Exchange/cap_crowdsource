@@ -72,9 +72,9 @@ function activate() {
 		build_damage_marker_tooltips();
 	});
 	$.ajaxPrefilter(function (options) {
-		if (options.crossDomain && window.location.host === "localhost:8888") {
+		if (options.crossDomain && window.location.host === "localhost:8889") {
 			// Set the proxy URL
-			if (options.url[0] === "/") options.url = "http://127.0.0.1:8888" + options.url;
+			if (options.url[0] === "/") options.url = "http://localhost:8889" + options.url;
 		} else {
 			options.crossDomain = false; // ********** NOT SURE IF PRODUCTION SERVER NEEDS crossDomain TO BE true **********
 		}
@@ -463,18 +463,7 @@ function set_overview_image(image) {
 	);
 }
 
-function set_review_image(imageObj, isHistory) {
-	var failed = false,
-		overviewLoaded = false;
-	if (assessment_features) assessment_features.remove();
-	if (imageThumbnailLyr) {
-		map.removeLayer(imageThumbnailLyr);
-		imageThumbnailLyr.remove();
-	}
-	if (imageLyr) {
-		map.removeLayer(imageLyr);
-		imageLyr.remove();
-	}
+function loadPicture(imageObj) {
 	map.setView(IMG_CENTER, IMG_ZOOM);
 	loadThumbnail();
 	if (loadHiResReady) {
@@ -494,6 +483,24 @@ function set_review_image(imageObj, isHistory) {
 	if (!isHistory) {
 		imageObj.assessment_features = new L.FeatureGroup();
 	}
+}
+
+function set_review_image(imageObj, isHistory) {
+	var failed = false,
+		overviewLoaded = false;
+	if (assessment_features) assessment_features.remove();
+	if (imageThumbnailLyr) {
+		map.removeLayer(imageThumbnailLyr);
+		imageThumbnailLyr.remove();
+	}
+	if (imageLyr) {
+		map.removeLayer(imageLyr);
+		imageLyr.remove();
+	}
+
+	// IF the imageObj is a point image
+	loadPicture(imageObj);
+
 	assessment_features = imageObj.assessment_features;
 	map.addLayer(assessment_features);
 	if (drawControl) map.removeControl(drawControl);
@@ -519,6 +526,30 @@ function set_review_image(imageObj, isHistory) {
 			failed = failed ? retryImage() : true;
 		});
 	}
+
+   function loadWMTSMap(imageObj) {
+   	var map = new L.Map('map', {
+		  center: bounds.getCenter(),
+		  zoom: 5,
+		  layers: [osm],
+		  maxBounds: bounds,
+		  maxBoundsViscosity: 1.0
+		});
+   }
+
+   function loadWMTSMap2(imageObj) {
+		var map = L.map('map').setView([51.505, -0.09], 3);
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+		
+		var southWest = L.latLng(-89.98155760646617, -180),
+		northEast = L.latLng(89.99346179538875, 180);
+		var bounds = L.latLngBounds(southWest, northEast);
+		
+		map.setMaxBounds(bounds);
+		map.on('drag', function() {
+		    map.panInsideBounds(bounds, { animate: false });
+		});   	
+   }
 
 	function loadHiRes() {
 		imageLyr = L.imageOverlay(imageObj.image["imageurl"], bounds).addTo(map);
