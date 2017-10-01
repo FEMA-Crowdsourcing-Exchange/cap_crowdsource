@@ -69,6 +69,47 @@ CREATE TABLE mission_review_status (
 GO
 
 
+-- DROP TABLE review_result;
+GO
+CREATE TABLE review_result (
+    id  VARCHAR(40) primary key,
+    tid INTEGER NOT NULL IDENTITY (1,1),
+    uploaddate  DATETIME,
+    altitude    NUMERIC(7,1),
+    latitude    NUMERIC(12,9),
+    longitude   NUMERIC(12,9),
+    exifphotodate   DATETIME,
+    exifcameramaker  VARCHAR(100),
+    exifcameramodel  VARCHAR(100),
+    exiffocallength  VARCHAR(100),
+    imageMissionId   INTEGER,
+    imageEventName  VARCHAR(80),
+    imageTeamName VARCHAR(80),
+    imageMissionName VARCHAR(80),
+    imageurl    VARCHAR(150),
+    thumbnailurl    VARCHAR(150),
+    lastReview     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    reviews         INTEGER DEFAULT 0,
+    status      VARCHAR(50) DEFAULT '',
+    num_affected    INTEGER NULL DEFAULT 0,
+    num_dmg_minor   INTEGER NULL DEFAULT 0,
+    num_dmg_major   INTEGER NULL DEFAULT 0,
+    num_destroyed   INTEGER NULL DEFAULT 0,
+    score   INTEGER NULL  DEFAULT 0,
+    shapeWKT    VARCHAR(80),
+    shape       GEOGRAPHY NOT NULL
+);
+CREATE INDEX review_result__imagemissionid__ind ON review_result(imagemissionid);
+SET ansi_nulls on
+SET quoted_identifier on
+SET concat_null_yields_null on
+SET ansi_warnings on
+SET ansi_padding on
+GO
+CREATE SPATIAL INDEX review_result__shape__ind ON review_result(shape);  
+GO
+
+
 ---- =================
 
 
@@ -89,5 +130,17 @@ INSERT INTO dbo.mission_review_status (imageMissionId, imageEventName, imageTeam
         FROM  ImageEvents.dbo.imageeventImages
         WHERE imageMissionId = 613586 and
            latitude > 0
-        GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName
+        GROUP BY imageMissionId, imageEventName, imageTeamName, imageMissionName;
+GO
+
+INSERT INTO dbo.review_result (id, uploaddate, altitude, latitude, longitude, 
+      exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, imageMissionId, imageEventName, imageTeamName, imageMissionName,
+      imageurl, thumbnailurl, shapeWKT, status, shape)
+   SELECT
+      id, uploaddate, altitude, latitude, longitude, 
+      exifphotodate, exifcameramodel, exifcameramaker, exiffocallength, imageMissionId, imageEventName, imageTeamName, imageMissionName,
+      imageurl, thumbnailurl, shapeWKT, status, GEOGRAPHY::STGeomFromText(shapewkt, 4326)
+      FROM
+        review_queue
+      ;
 GO
